@@ -1,0 +1,16 @@
+html,.addPhone { background:#191b1f; }
+.manageTable tr:not(.addPhone) { border-bottom-color:#191b1f; }
+.button { border-left-color:#191b1f; }
+.tools { background:#dce3df; }
+.addPhone.selected { background:#0c2716; }
+.addLock { color:#778; }
+.addPhone.locked:after { border-color:#375b0b; }
+tr { background:#d7e0e0; }
+.keyBackground { stroke:#d7e0e0; }
+.search { background:#e3e2e1; }
+.pinMark path { stroke:#726d63; }
+.scroll div { border-left-color:#101112; }
+.select { border-bottom-color:#101112; }
+.chevron,.stop { fill:#101112; }
+.scroll div { background:#ebe9e6; }
+.targetClass,.targetClass .targetLabel span { background:#e3dfe0; }

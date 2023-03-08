@@ -1,0 +1,35 @@
+button#avg-all {
+  position: relative;
+  
+  box-sizing: border-box;
+  padding: 11px 16px;
+  margin: 0;
+  overflow: hidden;
+  
+  background-color: var(--background-color);
+  border: 1px solid var(--background-color-contrast-more) !important;
+  border: none;
+  border-radius: 6px;
+  
+  color: var(--accent-color-contrast);
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1em;
+  
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+}
+
+button#avg-all:active {
+  box-sizing: border-box;
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  
+  color: var(--font-color-secondary);
+}
+
+button#avg-all {
+  margin-left: 6px;
+}
