@@ -11,6 +11,7 @@
 - Moved targets to a different folder for organization
 - Moved phone_book outside for easier access
 - Added a function to average all active graphs
+- Custom Diffuse Field Tilt (NEW)
 
 # TODO
 - Implement a way to measure the SPL of an IEM and decide whether to upload it or not, skipping REW
@@ -19,7 +20,6 @@
   - ability to apply smoothing
 - Trace Arithmetic
 - Realtime Analysis
-- Generating a tilt and applying it to DF
 
 # The In-Ear Graphing Library
 

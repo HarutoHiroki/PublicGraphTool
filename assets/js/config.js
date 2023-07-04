@@ -34,8 +34,9 @@ const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. 
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
       extraToneGeneratorEnabled = true;             // Enable tone generator function
-      PHONE_BOOK = "/phone_book.json";             // Path to JSON file containing phone metadata
-
+      PHONE_BOOK = "/phone_book.json",             // Path to JSON file containing phone metadata
+      default_bass_shelf = 8,
+      default_tilt = -0.8;
 // Specify which targets to display
 const targets = [
     { type:"Reference", files:["Haruto", "Haruto 🅱️ass"] },

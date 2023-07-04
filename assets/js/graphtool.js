@@ -80,6 +80,17 @@ doc.html(`
     </div>
 
       <div class="manage">
+        <div class="customDF">
+          <span>Custom Diffuse Field Tilt:</span>
+          <div>
+            <input type="number" inputmode="decimal" id="cusdf-bass" value="`+ default_bass_shelf +`" step="1""></input>
+            <span>Bass (dB)</span>
+          </div>
+          <div>
+            <input type="number" inputmode="decimal" id="cusdf-tilt" value="`+ default_tilt +`" step="0.1""></input>
+            <span>Tilt (dB/Oct)</span>
+          </div>
+        </div>
         <table class="manageTable">
           <colgroup>
             <col class="remove">
@@ -1691,7 +1702,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 isTarget:true, brand:b,
                 dispName:t, phone:t, fullName:t+" Target", fileName:t+" Target"
             });
-        d3.select(".manage").insert("div",".manageTable")
+        d3.select(".manage").insert("div",".customDF")
             .attr("class", "targets collapseTools");
         let l = (text,c) => s => s.append("div").attr("class","targetLabel").append("span").text(text);
         let ts = b.phoneObjs = doc.select(".targets").call(l("Targets"))
@@ -2631,6 +2642,72 @@ function addExtra() {
         });
     }
     drawAvgAll();
+
+    // Custom DF Tilt 
+    let boost = default_bass_shelf;
+    let tilt = default_tilt;
+
+    function updateDF (boost, tilt) {
+        // Applying Tilt n Boost
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        // Bass Shelf
+        let filters = [{disabled: false, type:"LSQ", freq:112.5, q:0.8, gain:boost}]; 
+        let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
+        // Tilt
+        let tiltOct = new Array(bass.length).fill(null);
+        for(let i = 0; i < bass[0].length; i++) {
+            let gainAdjustment = tilt * Math.log2(bass[0][i][0]);
+            let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
+            tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
+        }
+        let ch = [tiltOct];
+        //console.log(ch);
+        
+        // New Tilt
+        let brand = window.brandTarget;
+        let phoneObj = { isTarget:true, brand:brand, phone:"Custom Diffuse Field Tilt",
+            dispName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
+            fullName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
+            fileName:"Custom Diffuse Field Tilt"};
+        phoneObj.rawChannels = ch;
+        phoneObj.isTarget = true;
+        phoneObj.id = -69;
+        let phoneObjs = brand.phoneObjs;
+        let oldPhoneObj = phoneObjs.filter(p => p.phone === "Custom Diffuse Field Tilt")[0]
+        if (oldPhoneObj) {
+            oldPhoneObj.active && removePhone(oldPhoneObj);
+            phoneObj.id = oldPhoneObj.id;
+            phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
+        } else {
+            phoneObjs.push(phoneObj);
+        }
+        updatePhoneSelect();
+        return phoneObj;
+    }
+
+    doc.select("#cusdf-bass").on("change input", function () {
+        if (!this.checkValidity()) return;
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        if (!df.active) showPhone(df, true);
+
+        boost = +this.value;
+
+        let phone = updateDF(boost, tilt);
+        showPhone(phone, true);
+        updatePaths(true);
+    });
+
+    doc.select("#cusdf-tilt").on("change input", function () {
+        if (!this.checkValidity()) return;
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        if (!df.active) showPhone(df, true);
+
+        tilt = +this.value;
+
+        let phone = updateDF(boost, tilt);
+        showPhone(phone, true);
+        updatePaths(true);
+    });
 }
 addExtra();
 
