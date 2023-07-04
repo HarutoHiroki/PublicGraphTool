@@ -2672,16 +2672,6 @@ function addExtra() {
         phoneObj.rawChannels = ch;
         phoneObj.isTarget = true;
         phoneObj.id = -69;
-        let phoneObjs = brand.phoneObjs;
-        let oldPhoneObj = phoneObjs.filter(p => p.phone === "Custom Diffuse Field Tilt")[0]
-        if (oldPhoneObj) {
-            oldPhoneObj.active && removePhone(oldPhoneObj);
-            phoneObj.id = oldPhoneObj.id;
-            phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
-        } else {
-            phoneObjs.push(phoneObj);
-        }
-        updatePhoneSelect();
         return phoneObj;
     }
 
