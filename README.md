@@ -1,8 +1,8 @@
 # Changes
-- Added Equalizer
+- Added Equalizer (cred to Rohsa)
 - Added Uploads
 - Added Targets
-- Added Website link on graph
+- Added Website link on graph (cred to MRS)
 - Re-themed graph window
 - Re-done Frequency Range definitions
 - Changed parser to universal parser
@@ -20,6 +20,9 @@
   - ability to apply smoothing
 - Trace Arithmetic
 - Realtime Analysis
+
+# P.S.
+- If you do implement code in here, do leave credits to the original author (me) and the contributors (Rohsa, MRS)
 
 # The In-Ear Graphing Library
 
