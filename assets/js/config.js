@@ -36,7 +36,8 @@ const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. 
       extraToneGeneratorEnabled = true,             // Enable tone generator function
       PHONE_BOOK = "/phone_book.json",             // Path to JSON file containing phone metadata
       default_bass_shelf = 8,
-      default_tilt = -0.8;
+      default_tilt = -0.8,
+      default_DF_name = "Diffuse Field";
 
 // Specify which targets to display
 const targets = [

@@ -2649,7 +2649,7 @@ function addExtra() {
 
     function updateDF (boost, tilt) {
         // Applying Tilt n Boost
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
         // Bass Shelf
         let filters = [{disabled: false, type:"LSQ", freq:112.5, q:0.8, gain:boost}]; 
         let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
@@ -2684,7 +2684,7 @@ function addExtra() {
 
     doc.select("#cusdf-bass").on("change input", function () {
         if (!this.checkValidity()) return;
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
         if (!df.active) showPhone(df, true);
 
         boost = +this.value;
@@ -2696,7 +2696,7 @@ function addExtra() {
 
     doc.select("#cusdf-tilt").on("change input", function () {
         if (!this.checkValidity()) return;
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === "Diffuse Field");
+        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
         if (!df.active) showPhone(df, true);
 
         tilt = +this.value;
