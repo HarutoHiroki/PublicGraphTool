@@ -2661,7 +2661,6 @@ function addExtra() {
             tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
         }
         let ch = [tiltOct];
-        //console.log(ch);
         
         // New Tilt
         let brand = window.brandTarget;
@@ -2670,7 +2669,6 @@ function addExtra() {
             fullName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
             fileName:"Custom Diffuse Field Tilt"};
         phoneObj.rawChannels = ch;
-        phoneObj.isTarget = true;
         phoneObj.id = -69;
         return phoneObj;
     }

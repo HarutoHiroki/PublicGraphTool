@@ -35,8 +35,10 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       extraEQBandsMax = 20,                         // Max EQ bands available
       extraToneGeneratorEnabled = true,             // Enable tone generator function
       num_samples = 5,                              // Number of samples to average for smoothing
-      scale_smoothing = 0.2;                        // Smoothing factor for scale transitions
-      PHONE_BOOK = "phone_book_hp.json";            // Phone book location
+      scale_smoothing = 0.2,                        // Smoothing factor for scale transitions
+      PHONE_BOOK = "phone_book_hp.json",            // Phone book location
+      default_bass_shelf = 8,
+      default_tilt = -0.8;
 
 
 // Specify which targets to display
