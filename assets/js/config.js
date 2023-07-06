@@ -34,10 +34,11 @@ const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. 
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
       extraToneGeneratorEnabled = true,             // Enable tone generator function
-      PHONE_BOOK = "/phone_book.json",             // Path to JSON file containing phone metadata
-      default_bass_shelf = 8,
-      default_tilt = -0.8,
-      default_DF_name = "Diffuse Field";
+      PHONE_BOOK = "/phone_book.json",              // Path to JSON file containing phone metadata
+      default_bass_shelf = 8,                       // Default Custom DF bass shelf value
+      default_tilt = -0.8,                          // Default Custom DF tilt value
+      default_DF_name = "Diffuse Field",            // Default RAW DF name
+      dfBaseline = true;                            // If true, DF is used as baseline when custom df tilt is on
 
 // Specify which targets to display
 const targets = [

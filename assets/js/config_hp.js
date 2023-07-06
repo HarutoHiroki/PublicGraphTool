@@ -37,8 +37,10 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       num_samples = 5,                              // Number of samples to average for smoothing
       scale_smoothing = 0.2,                        // Smoothing factor for scale transitions
       PHONE_BOOK = "phone_book_hp.json",            // Phone book location
-      default_bass_shelf = 8,
-      default_tilt = -0.8;
+      default_bass_shelf = 8,                       // Default Custom DF bass shelf value
+      default_tilt = -0.8,                          // Default Custom DF tilt value
+      default_DF_name = "Diffuse Field",            // Default RAW DF name
+      dfBaseline = true;                            // If true, DF is used as baseline when custom df tilt is on
 
 
 // Specify which targets to display

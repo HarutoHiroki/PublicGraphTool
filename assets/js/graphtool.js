@@ -230,6 +230,9 @@ gr.append("rect").attrs({x:0, y:pad.t-8, width:W0, height:H0-22, rx:4,
                          "class":"graphBackground"});
 watermark(gr);
 
+// custom DF stuff
+let boost = default_bass_shelf;
+let tilt = default_tilt;
 
 // Scales
 let x = d3.scaleLog()
@@ -1072,6 +1075,9 @@ function addPhonesToUrl() {
         url += "?share=" + encodeURI(names.join().replace(/ /g,"_"));
         title = namesCombined + " - " + title;
     }
+    if (names.includes("Custom Diffuse Field Tilt")) {
+        url += "&bass="+boost+"&tilt="+tilt;
+    }
     if (names.length === 1) {
         targetWindow.document.querySelector("link[rel='canonical']").setAttribute("href",url)
     } else {
@@ -1625,14 +1631,33 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         let url = targetWindow.location.href,
             par = "share=";
             emb = "embed";
+            cDFb = "bass=";
+            cDFt = "tilt=";
         baseURL = url.split("?").shift();
+        let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
+        let str = match && match[1] ? match[1].replace("share=", "") : null;
         if (url.includes(par) && url.includes(emb)) {
-            initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            initReq = str.split(",");
             loadFromShare = 2;
         } else if (url.includes(par)) {
-            initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            initReq = str.split(",");
             loadFromShare = 1;
         }
+
+        if (url.includes(cDFb)) {
+            let match = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)/);
+            let str = match && match[1] ? match[1].replace("bass=", "") : null;
+            boost = parseFloat(str);
+        }
+        
+        if (url.includes(cDFt)) {
+            let match = decodeURIComponent(url.replace(/_/g," ")).match(/tilt=([^&]+)/);
+            let str = match && match[1] ? match[1].replace("tilt=", "") : null;
+            tilt = parseFloat(str);
+        }
+
     }
     let isInit = initReq ? f => initReq.indexOf(f) !== -1
                          : _ => false;
@@ -1720,6 +1745,95 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
 
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
+
+    // Custom DF Tilt 
+    let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
+    if (!df.rawChannels) {
+        loadFiles(df, function (ch) {
+            df.rawChannels = ch;
+        });
+    }
+    
+    function updateDF (boost, tilt, change) {
+        // Bass Shelf
+        let filters = [{disabled: false, type:"LSQ", freq:112.5, q:0.8, gain:boost}]; 
+        let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
+        // Tilt
+        let tiltOct = new Array(bass.length).fill(null);
+        if (boost == 0) {
+            for(let i = 0; i < bass[0].length; i++) {
+                let gainAdjustment = tilt * Math.log2(bass[0][i][0]);
+                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
+                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
+            }
+        } else {
+            for(let i = 0; i < bass[0].length; i++) {
+                let gainAdjustment = 0;
+                if (bass[0][i][0] >= 200) gainAdjustment = tilt * Math.log2(bass[0][i][0]/200);
+                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
+                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
+            }
+        }
+        let ch = [tiltOct];
+
+        // New Tilt
+        let brand = window.brandTarget;
+        let phoneObj = { isTarget:true, brand:brand, phone:"Custom Diffuse Field Tilt",
+            fullName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
+            dispName:"Custom Diffuse Field Tilt",
+            fileName:"Custom Diffuse Field Tilt"};
+        phoneObj.rawChannels = ch;
+        phoneObj.id = -69;
+        showPhone(phoneObj, true);
+
+        if (dfBaseline) {
+            showPhone(df, false);
+            setBaseline(df===baseline.df ? baseline0 : getBaseline(df));
+            function toggleHide(p) {
+                let h = p.hide;
+                let t = table.selectAll("tr").filter(q=>q===p);
+                t.select(".keyLine").on("click", h?null:toggleHide)
+                    .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
+                t.select(".hideIcon").classed("selected", !h);
+                gpath.selectAll("path").filter(c=>c.p===p)
+                    .attr("opacity", h?null:0);
+                p.hide = !h;
+                if (labelsShown) {
+                    clearLabels();
+                    drawLabels();
+                }
+            }
+            toggleHide(df);
+        }
+        updatePaths(true);
+
+        // focus cusdf inputs
+        if (change === "bass") {
+            doc.select("#cusdf-bass").node().focus();
+        } else if (change === "tilt") {
+            doc.select("#cusdf-tilt").node().focus();
+        }
+    }
+
+    doc.select("#cusdf-bass").on("change input", function () {
+        if (!this.checkValidity()) return;
+        boost = +this.value;
+        updateDF(boost, tilt, "bass");
+    });
+
+    doc.select("#cusdf-tilt").on("change input", function () {
+        if (!this.checkValidity()) return;
+        tilt = +this.value;
+        updateDF(boost, tilt, "tilt");
+    });
+                            
+    // shareable DF tilt
+    if (isInit("Custom Diffuse Field Tilt") || init_phones.includes(default_DF_name + " Target")) {
+        loadFiles(df, function (ch) {
+            df.rawChannels = ch;
+            updateDF(boost, tilt);
+        });
+    }
 
     function setBrand(b, exclusive) {
         let phoneSel = doc.select("#phones").selectAll("div.phone-item");
@@ -2642,69 +2756,6 @@ function addExtra() {
         });
     }
     drawAvgAll();
-
-    // Custom DF Tilt 
-    let boost = default_bass_shelf;
-    let tilt = default_tilt;
-
-    function updateDF (boost, tilt) {
-        // Applying Tilt n Boost
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-        // Bass Shelf
-        let filters = [{disabled: false, type:"LSQ", freq:112.5, q:0.8, gain:boost}]; 
-        let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
-        // Tilt
-        let tiltOct = new Array(bass.length).fill(null);
-        if (boost == 0) {
-            for(let i = 0; i < bass[0].length; i++) {
-                let gainAdjustment = tilt * Math.log2(bass[0][i][0]);
-                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
-                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
-            }
-        } else {
-            for(let i = 0; i < bass[0].length; i++) {
-                let gainAdjustment = 0;
-                if (bass[0][i][0] >= 200) gainAdjustment = tilt * Math.log2(bass[0][i][0]/200);
-                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
-                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
-            }
-        }
-        let ch = [tiltOct];
-        
-        // New Tilt
-        let brand = window.brandTarget;
-        let phoneObj = { isTarget:true, brand:brand, phone:"Custom Diffuse Field Tilt",
-            dispName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
-            fullName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
-            fileName:"Custom Diffuse Field Tilt"};
-        phoneObj.rawChannels = ch;
-        phoneObj.id = -69;
-        return phoneObj;
-    }
-
-    doc.select("#cusdf-bass").on("change input", function () {
-        if (!this.checkValidity()) return;
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-        if (!df.active) showPhone(df, true);
-
-        boost = +this.value;
-
-        let phone = updateDF(boost, tilt);
-        showPhone(phone, true);
-        updatePaths(true);
-    });
-
-    doc.select("#cusdf-tilt").on("change input", function () {
-        if (!this.checkValidity()) return;
-        let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-        if (!df.active) showPhone(df, true);
-
-        tilt = +this.value;
-
-        let phone = updateDF(boost, tilt);
-        showPhone(phone, true);
-        updatePaths(true);
-    });
 }
 addExtra();
 
