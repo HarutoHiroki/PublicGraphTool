@@ -1816,13 +1816,13 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     }
 
     doc.select("#cusdf-bass").on("change input", function () {
-        if (!this.checkValidity()) return;
+        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
         boost = +this.value;
         updateDF(boost, tilt, "bass");
     });
 
     doc.select("#cusdf-tilt").on("change input", function () {
-        if (!this.checkValidity()) return;
+        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
         tilt = +this.value;
         updateDF(boost, tilt, "tilt");
     });
