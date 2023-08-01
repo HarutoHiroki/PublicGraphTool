@@ -1075,7 +1075,7 @@ function addPhonesToUrl() {
         url += "?share=" + encodeURI(names.join().replace(/ /g,"_"));
         title = namesCombined + " - " + title;
     }
-    if (names.includes("Custom Diffuse Field Tilt")) {
+    if (names.includes("Custom Tilt")) {
         url += "&bass="+boost+"&tilt="+tilt;
     }
     if (names.length === 1) {
@@ -1509,7 +1509,9 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     normalizePhone(p); p.offset=p.offset||0;
     if (exclusive) {
         activePhones = activePhones.filter(q => q.active = keep(q));
-        if (baseline.p && !baseline.p.active) setBaseline(baseline0,1);
+        if (baseline.p && !baseline.p.active) {
+            if (baseline.p.phone != default_DF_name && !dfBaseline) setBaseline(baseline0,1);
+        }
     }
     if (activePhones.indexOf(p)===-1 && (suppressVariant || !p.objs)) {
         let avg = false;
@@ -1550,7 +1552,7 @@ function removeCopies(p) {
     removePhone(p);
 }
 
-function removePhone(p) {
+function removePhone(p, cdf) {
     p.active = p.pin = false; nextPN = null;
     activePhones = activePhones.filter(q => q.active);
     if (!p.isTarget) {
@@ -1560,7 +1562,7 @@ function removePhone(p) {
         }
     }
     updatePaths();
-    if (baseline.p && !baseline.p.active) { setBaseline(baseline0); }
+    if (!cdf && baseline.p && !baseline.p.active) { setBaseline(baseline0); }
     updatePhoneTable();
     d3.selectAll("#phones div,.target")
         .filter(q=>q===(p.copyOf||p))
@@ -1746,7 +1748,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
 
-    // Custom DF Tilt 
+    // -------------------- Custom DF Tilt -------------------- //
     let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     if (!df.rawChannels) {
         loadFiles(df, function (ch) {
@@ -1756,7 +1758,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     
     function updateDF (boost, tilt, change) {
         // Bass Shelf
-        let filters = [{disabled: false, type:"LSQ", freq:112.5, q:0.8, gain:boost}]; 
+        let filters = [{disabled: false, type:"LSQ", freq:102.5, q:0.7, gain:boost}]; 
         let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
         // Tilt
         let tiltOct = new Array(bass.length).fill(null);
@@ -1774,38 +1776,31 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
             }
         }
-        let ch = [tiltOct];
-
         // New Tilt
         let brand = window.brandTarget;
-        let phoneObj = { isTarget:true, brand:brand, phone:"Custom Diffuse Field Tilt",
-            fullName:"Custom Diffuse Field Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
-            dispName:"Custom Diffuse Field Tilt",
-            fileName:"Custom Diffuse Field Tilt"};
-        phoneObj.rawChannels = ch;
+        let phoneObjs = brand.phoneObjs;
+        let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
+            fullName:"Custom Delta (∆) Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct)",
+            dispName:"Custom Delta (∆) Tilt",
+            fileName:"Custom Tilt"};
+        phoneObj.rawChannels = [tiltOct];
         phoneObj.id = -69;
+        
+        let oldPhoneObj = brand.phoneObjs.filter(p => p.phone == "Custom Tilt")[0]
+        if (oldPhoneObj) {
+            oldPhoneObj.active && removePhone(oldPhoneObj);
+            phoneObj.id = oldPhoneObj.id;
+            phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
+        } else {
+            phoneObjs.push(phoneObj);
+        }
         showPhone(phoneObj, true);
 
         if (dfBaseline) {
             showPhone(df, false);
-            setBaseline(df===baseline.df ? baseline0 : getBaseline(df));
-            function toggleHide(p) {
-                let h = p.hide;
-                let t = table.selectAll("tr").filter(q=>q===p);
-                t.select(".keyLine").on("click", h?null:toggleHide)
-                    .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
-                t.select(".hideIcon").classed("selected", !h);
-                gpath.selectAll("path").filter(c=>c.p===p)
-                    .attr("opacity", h?null:0);
-                p.hide = !h;
-                if (labelsShown) {
-                    clearLabels();
-                    drawLabels();
-                }
-            }
-            toggleHide(df);
+            setBaseline(getBaseline(df));
+            removePhone(df, true);
         }
-        updatePaths(true);
 
         // focus cusdf inputs
         if (change === "bass") {
@@ -1828,7 +1823,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     });
                             
     // shareable DF tilt
-    if (isInit("Custom Diffuse Field Tilt") || init_phones.includes(default_DF_name + " Target")) {
+    if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
         loadFiles(df, function (ch) {
             df.rawChannels = ch;
             updateDF(boost, tilt);
