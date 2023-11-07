@@ -34,6 +34,13 @@ doc.html(`
           <button id="avg-all">Average All</button>
         </div>
 
+        <div class="yscaler">
+          <span>Y-axis Scale:</span>
+          <div>
+            <button id="yscalebtn" class="40db">40dB</button>
+          </div>
+        </div>
+
         <div class="zoom">
           <span>Zoom:</span>
           <button>Bass</button>
@@ -83,12 +90,16 @@ doc.html(`
         <div class="customDF">
           <span>Custom Delta Tilt:</span>
           <div>
+            <input type="number" inputmode="decimal" id="cusdf-tilt" value="`+ default_tilt +`" step="0.1""></input>
+            <span>Tilt (dB/Oct)</span>
+          </div>
+          <div>
             <input type="number" inputmode="decimal" id="cusdf-bass" value="`+ default_bass_shelf +`" step="1""></input>
             <span>Bass (dB)</span>
           </div>
           <div>
-            <input type="number" inputmode="decimal" id="cusdf-tilt" value="`+ default_tilt +`" step="0.1""></input>
-            <span>Tilt (dB/Oct)</span>
+          <input type="number" inputmode="decimal" id="cusdf-treb" value="`+ default_treble +`" step="0.1""></input>
+          <span>Treble (dB)</span>
           </div>
           <div>
             <input type="number" inputmode="decimal" id="cusdf-ear" value="`+ default_ear +`" step="0.1""></input>
@@ -96,7 +107,7 @@ doc.html(`
           </div>
           <button id="cusdf-10db" style="margin-right: 10px">10dB Tilt</button>
           <button id="cusdf-tiltTHIS" style="margin-right: 10px">Tilt Current Target</button>
-          <button id="cusdf-bored">I'm Bored</button>
+          <button id="cusdf-bounds">Preference Bounds</button>
         </div>
         <table class="manageTable">
           <colgroup>
@@ -308,13 +319,14 @@ doc.on("keydown", function() {
 let boost = default_bass_shelf;
 let tilt = default_tilt;
 let ear = default_ear;
+let treble = default_treble;
 
 // Scales
 let x = d3.scaleLog()
     .domain([20,20000])
     .range([pad.l,pad.l+W]);
 
-let yD = [29.5,85], // Decibels
+let yD = [40,80], // Decibels
     yR = [pad.t+H,pad.t+10];
 let y = d3.scaleLinear().domain(yD).range(yR);
 
@@ -504,6 +516,7 @@ dB.circ = dB.trans.selectAll().data([-1,1]).join("circle")
         dB.scale.attr("transform", "scale(1,"+sc+")");
         dB.h = 15*sc;
         dB.mid.attrs({y:dB.y-dB.h,height:2*dB.h});
+        updateBoundsScaling(h);
         dB.updatey();
     }));
 let yCenter = 60;
@@ -512,9 +525,73 @@ dB.updatey = function (dom) {
     y.domain(yR.map(y=>yCenter+(y-dB.y)*(15/dB.h)*d(yD)/d(yR)));
     yAxisObj.call(fmtY);
     let getTr = o => o ? "translate(0,"+(y(o)-y(0))+")" : null;
-    clearLabels();
+    //clearLabels();
     gpath.selectAll("path").call(redrawLine);
 }
+
+// y-axis scaler button
+const defY = dB.y;
+
+function updateYScaling(h, y) {
+    let sc = h/dB.H;
+    dB.h = 15*sc;
+    dB.y = y;
+    dB.circ.attr("cy",s=>h*s);
+    dB.scale.attr("transform", "scale(1,"+sc+")");
+    dB.mid.attrs({y:dB.y-dB.h,height:2*dB.h});
+    dB.trans.attr("transform", dB.tr());
+    dB.updatey();
+    updateBoundsScaling(h);
+}
+
+function updateBoundsScaling(h) {
+    let scale = h/76;
+    gr.select("[id=bounds]").attr("transform", "scale(1,"+scale+")");
+    gr.select("[id=bounds]").attr("transform-origin", "0 25");
+}
+updateBoundsScaling(dB.H);
+
+doc.select("#yscalebtn").on("click", function() {
+    // 3 way button, class="crin" is the default, class="40db" is the 40dB scale, class="50db" is the 50dB scale
+    // 5 way now cuz listener said so
+    switch (this.classList[0]) {
+        case "20db":
+            this.classList.remove("20db");
+            this.classList.add("30db");
+            this.innerHTML = "30dB";
+            updateYScaling(101.33, 172);
+            break;
+        case "30db":
+            this.classList.remove("30db");
+            this.classList.add("40db");
+            this.innerHTML = "40dB";
+            updateYScaling(dB.H, defY);
+            break;
+        case "40db":
+            this.classList.remove("40db");
+            this.classList.add("50db");
+            this.innerHTML = "50dB";
+            updateYScaling(60.79, 172);
+            break;
+        case "50db":
+            this.classList.remove("50db");
+            this.classList.add("crin");
+            this.innerHTML = "Crin";
+            updateYScaling(54.77, 156.94);
+            break;
+        case "crin":
+            this.classList.remove("crin");
+            this.classList.add("20db");
+            this.innerHTML = "20dB";
+            updateYScaling(152, 172);
+            break;
+        default:
+            this.className = "40db";
+            this.innerHTML = "40dB";
+            updateYScaling(dB.H, defY);
+            break;
+    }
+});
 
 
 // Label drawing and screenshot
@@ -1155,7 +1232,7 @@ function addPhonesToUrl() {
         title = namesCombined + " - " + title;
     }
     if (names.includes("Custom Tilt")) {
-        url += "&bass="+boost+"&tilt="+tilt;
+        url += "&bass="+boost+"&tilt="+tilt+"&treble="+treble+"&ear="+ear;
     }
     if (names.length === 1) {
         targetWindow.document.querySelector("link[rel='canonical']").setAttribute("href",url)
@@ -1631,7 +1708,8 @@ function removeCopies(p) {
     removePhone(p);
 }
 
-function removePhone(p, cdf) {
+function removePhone(p) {
+    let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     p.active = p.pin = false; nextPN = null;
     activePhones = activePhones.filter(q => q.active);
     if (!p.isTarget) {
@@ -1641,7 +1719,7 @@ function removePhone(p, cdf) {
         }
     }
     updatePaths();
-    if (!cdf && baseline.p && !baseline.p.active) { setBaseline(baseline0); }
+    if (baseline.p && !baseline.p.active && baseline.p != df) { setBaseline(baseline0); }
     updatePhoneTable();
     d3.selectAll("#phones div,.target")
         .filter(q=>q===(p.copyOf||p))
@@ -1714,6 +1792,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             emb = "embed";
             cDFb = "bass=";
             cDFt = "tilt=";
+            cDFtr = "treble=";
+            cDFe = "ear=";
         baseURL = url.split("?").shift();
         let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
         let str = match && match[1] ? match[1].replace("share=", "") : null;
@@ -1737,6 +1817,18 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             let match = decodeURIComponent(url.replace(/_/g," ")).match(/tilt=([^&]+)/);
             let str = match && match[1] ? match[1].replace("tilt=", "") : null;
             tilt = parseFloat(str);
+        }
+
+        if (url.includes(cDFtr)) {
+            let match = decodeURIComponent(url.replace(/_/g," ")).match(/treble=([^&]+)/);
+            let str = match && match[1] ? match[1].replace("treble=", "") : null;
+            treble = parseFloat(str);
+        }
+
+        if (url.includes(cDFe)) {
+            let match = decodeURIComponent(url.replace(/_/g," ")).match(/ear=([^&]+)/);
+            let str = match && match[1] ? match[1].replace("ear=", "") : null;
+            ear = parseFloat(str);
         }
 
     }
@@ -1830,11 +1922,13 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     // -------------------- Custom DF Tilt -------------------- //
     let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     let customTiltName = "Delta (∆)"
-    if (!df.rawChannels) {
-        loadFiles(df, function (ch) {
-            df.rawChannels = ch;
-        });
-    }
+    let dfBase;
+    loadFiles(df, function (ch) {
+        df.rawChannels = ch;
+        showPhone(df, false);
+        dfBase = getBaseline(df);
+        removePhone(df);
+    });
 
     let tiltTHIS = doc.select("#cusdf-tiltTHIS");
     // if tiltTHIS is clicked, switch df to current active target if exists
@@ -1856,16 +1950,18 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                         df.rawChannels = ch;
                     });
                 }
-                updateDF(boost, tilt, ear);
+                dfBase = getBaseline(df);
+                updateDF(boost, tilt, ear, treble);
             }
         }
     });
     
-    function updateDF (boost, tilt, ear, change) {
+    function updateDF (boost, tilt, ear, treble, change) {
         // Bass Shelf
         let filters = [
-            {disabled: false, type:"LSQ", freq:102.5, q:0.7, gain:boost},
-            {disabled: false, type:"PK", freq:2800, q:1.8, gain:ear}
+            {disabled: false, type:"LSQ", freq:105, q:0.7759, gain:boost},
+            {disabled: false, type:"PK", freq:2800, q:1.8, gain:ear},
+            {disabled: false, type:"HSQ", freq:2500, q:0.3913, gain:treble}
         ]; 
         let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
         // Tilt
@@ -1887,8 +1983,18 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         // New Tilt
         let brand = window.brandTarget;
         let phoneObjs = brand.phoneObjs;
+        let fullDispName = customTiltName;
+        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? fullDispName += " (" : null;
+        tilt != 0 ? fullDispName += "Tilt: " + tilt + "dB/Oct" : null;
+        tilt != 0 && (boost != 0 || treble !=0 || ear != 0) ? fullDispName += ", " : null;
+        boost != 0 ? fullDispName += "Bass: " + boost + "dB" : null;
+        boost != 0 && (treble != 0 || ear != 0) ? fullDispName += ", " : null;
+        treble != 0 ? fullDispName += "Treble: " + treble + "dB" : null;
+        treble != 0 && ear != 0 ? fullDispName += ", " : null;
+        ear != 0 ? fullDispName += "Ear: " + ear + "dB" : null;
+        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? fullDispName += ")" : null;
         let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
-        fullName:"Custom " + customTiltName + " Tilt (Bass: " + boost + "dB, Tilt: " + tilt + "dB/Oct, Ear Gain: " + ear + "dB)",
+        fullName:fullDispName,
         dispName:"Custom " + customTiltName + " Tilt",
             fileName:"Custom Tilt"};
         phoneObj.rawChannels = [tiltOct];
@@ -1905,9 +2011,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         showPhone(phoneObj, true);
 
         if (dfBaseline) {
-            showPhone(df, false);
-            setBaseline(getBaseline(df));
-            removePhone(df, true);
+            setBaseline(dfBase);
+            drawLabels();
         }
 
         // focus cusdf inputs
@@ -1917,6 +2022,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             doc.select("#cusdf-tilt").node().focus();
         } else if (change === "ear") {
             doc.select("#cusdf-ear").node().focus();
+        } else if (change === "treble") {
+            doc.select("#cusdf-treb").node().focus();
         }
     }
 
@@ -1926,26 +2033,32 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         if (konami) {
             // hidden features
         }
-        updateDF(boost, tilt, ear, "bass");
+        updateDF(boost, tilt, ear, treble, "bass");
     });
 
     doc.select("#cusdf-tilt").on("change input", function () {
         if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
         tilt = +this.value;
-        updateDF(boost, tilt, ear, "tilt");
+        updateDF(boost, tilt, ear, treble, "tilt");
     });
 
     doc.select("#cusdf-ear").on("change input", function () {
         if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
         ear = +this.value;
-        updateDF(boost, tilt, ear, "ear");
+        updateDF(boost, tilt, ear, treble, "ear");
+    });
+
+    doc.select("#cusdf-treb").on("change input", function () {
+        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
+        treble = +this.value;
+        updateDF(boost, tilt, ear, treble, "treble");
     });
                             
     // shareable DF tilt
     if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
         loadFiles(df, function (ch) {
             df.rawChannels = ch;
-            updateDF(boost, tilt, ear);
+            updateDF(boost, tilt, ear, treble);
         });
     }
 
@@ -1955,22 +2068,41 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         boost = 0;
         // tilt -1dB/oct
         tilt = -1;
-        updateDF(boost, tilt, ear);
+        updateDF(boost, tilt, ear, treble);
         // update cusdf inputs
         doc.select("#cusdf-bass").node().value = boost;
         doc.select("#cusdf-tilt").node().value = tilt;
     });
 
-    // I'm bored feature to randomize DF tilt,... blame tam
-    doc.select("#cusdf-bored").on("click", function () {
-        // random boost from 0.0 to 20
-        boost = Math.floor(Math.random() * 201) / 10;
-        // random tilt from 0.0 to -2
-        tilt = Math.floor(Math.random() * 21) / -10;
-        updateDF(boost, tilt, ear);
-        // update cusdf inputs
-        doc.select("#cusdf-bass").node().value = boost;
-        doc.select("#cusdf-tilt").node().value = tilt;
+    // Preference Bounds button
+    doc.select("#cusdf-bounds").on("click", function () {
+        function toggleHide(p) {
+            let h = p.hide;
+            let t = table.selectAll("tr").filter(q=>q===p);
+            t.select(".keyLine").on("click", h?null:toggleHide)
+                .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
+            t.select(".hideIcon").classed("selected", !h);
+            gpath.selectAll("path").filter(c=>c.p===p)
+                .attr("opacity", h?null:0);
+            p.hide = !h;
+            if (labelsShown) {
+                clearLabels();
+                drawLabels();
+            }
+        }
+        let boundsBtn = gr.select("[id=bounds]");
+        if (boundsBtn.attr("display") == "none") {
+            boundsBtn.attr("display", "block");
+            setBaseline(dfBase);
+            drawLabels();
+            // hide all targets
+            activePhones.filter(p => p.isTarget).forEach(p => toggleHide(p));
+        } else {
+            boundsBtn.attr("display", "none");
+            // unhide all targets
+            activePhones.filter(p => p.isTarget).forEach(p => toggleHide(p));
+        }
+
     });
 
     function setBrand(b, exclusive) {
@@ -2464,9 +2596,6 @@ function addExtra() {
     }
     if (!extraEQEnabled) {
         document.querySelector("div.extra-panel > div.extra-eq").style["display"] = "none";
-    }
-    if (!extraToneGeneratorEnabled) {
-        document.querySelector("div.extra-panel > div.extra-tone-generator").style["display"] = "none";
     }
     // Show and hide extra panel
     window.showExtraPanel = () => {

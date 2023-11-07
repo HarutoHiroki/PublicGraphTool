@@ -15,6 +15,7 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       share_url = true,                             // If true, enables shareable URLs
       watermark_text = "HarutoHiroki",              // Optional. Watermark appears behind graphs
       watermark_image_url = "assets/images/haruto.svg",   // Optional. If image file is in same directory as config, can be just the filename
+      preference_bounds = "assets/images/bounds.png", // Optional. If png file is present, display bounds image
       page_title = "HarutoHiroki",                  // Optional. Appended to the page title if share URLs are enabled
       page_description = "View and compare frequency response graphs for headphones.",
       accessories = true,                           // If true, displays specified HTML at the bottom of the page. Configure further below
@@ -33,7 +34,6 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       extraEQEnabled = true,                        // Enable parametic eq function
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
-      extraToneGeneratorEnabled = true,             // Enable tone generator function
       num_samples = 5,                              // Number of samples to average for smoothing
       scale_smoothing = 0.2,                        // Smoothing factor for scale transitions
       PHONE_BOOK = "phone_book_hp.json",            // Phone book file path & name
@@ -41,6 +41,7 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       default_bass_shelf = 8,                       // Default Custom DF bass shelf value
       default_tilt = -0.8,                          // Default Custom DF tilt value
       default_ear = 0,                              // Default Custom DF ear gain value
+      default_treble = 0,                           // Default Custom DF treble gain value
       default_DF_name = "KEMAR DF",                 // Default RAW DF name
       dfBaseline = false,                           // If true, DF is used as baseline when custom df tilt is on
       tiltableTargets = ["KEMAR DF"];               // Targets that are allowed to be tilted
@@ -75,6 +76,11 @@ function watermark(svg) {
         wm.append("text")
             .attrs({id:'wtext', x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
             .text(watermark_text);
+    }
+
+    if ( preference_bounds ) {
+        wm.append("image")
+        .attrs({id:'bounds',x:-385, y:-365, width:770, height:770, "xlink:href":preference_bounds, "display":"none"});
     }
 
     // Extra flair

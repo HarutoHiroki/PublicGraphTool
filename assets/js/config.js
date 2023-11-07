@@ -4,7 +4,7 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
       default_channels = ["L","R"],                 // Which channels to display. Avoid javascript errors if loading just one channel per phone
       default_normalization = "dB",                 // Sets default graph normalization mode. Accepts "dB" or "Hz"
       default_norm_db = 60,                         // Sets default dB normalization point
-      default_norm_hz = 1000,                        // Sets default Hz normalization point (500Hz is recommended by IEC)
+      default_norm_hz = 630,                        // Sets default Hz normalization point (500Hz is recommended by IEC)
       max_channel_imbalance = 5,                    // Channel imbalance threshold to show ! in the channel selector
       alt_layout = true,                            // Toggle between classic and alt layouts
       alt_sticky_graph = true,                      // If active graphs overflows the viewport, does the graph scroll with the page or stick to the viewport?
@@ -15,6 +15,7 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
       share_url = true,                             // If true, enables shareable URLs
       watermark_text = "HarutoHiroki",              // Optional. Watermark appears behind graphs
       watermark_image_url = "assets/images/haruto.svg", // Optional. If image file is in same directory as config, can be just the filename
+      preference_bounds = "assets/images/bounds.png", // Preference bounds image
       page_title = "HarutoHiroki",                  // Optional. Appended to the page title if share URLs are enabled
       page_description = "View and compare frequency response graphs for earphones",
       accessories = true,                           // If true, displays specified HTML at the bottom of the page. Configure further below
@@ -33,12 +34,12 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
       extraEQEnabled = true,                        // Enable parametic eq function
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
-      extraToneGeneratorEnabled = true,             // Enable tone generator function
       PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
       REWenabled = false,                           // Enable REW import function
       default_bass_shelf = 8,                       // Default Custom DF bass shelf value
       default_tilt = -0.8,                          // Default Custom DF tilt value
       default_ear = 0,                              // Default Custom DF ear gain value
+      default_treble = 0,                           // Default Custom DF treble gain value
       default_DF_name = "Diffuse Field",                        // Default RAW DF name
       dfBaseline = false,                           // If true, DF is used as baseline when custom df tilt is on
       tiltableTargets = ["Diffuse Field"];                         // Targets that are allowed to be tilted
@@ -75,6 +76,11 @@ function watermark(svg) {
         wm.append("text")
             .attrs({id:'wtext', x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
             .text(watermark_text);
+    }
+
+    if ( preference_bounds ) {
+        wm.append("image")
+        .attrs({id:'bounds',x:-385, y:-365, width:770, height:770, "xlink:href":preference_bounds, "display":"none"});
     }
 
     // Extra flair

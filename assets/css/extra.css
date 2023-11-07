@@ -3,9 +3,9 @@
   display: none !important;
 }
 
-/** Average All button **/
-
-button#avg-all {
+/** Extra buttons **/
+button#avg-all,
+button#yscalebtn {
   position: relative;
   
   box-sizing: border-box;
@@ -29,7 +29,8 @@ button#avg-all {
   outline: none;
 }
 
-button#avg-all:active {
+button#avg-all:active,
+button#yscalebtn:active {
   box-sizing: border-box;
   background-color: var(--accent-color) !important;
   border-color: var(--accent-color) !important;
@@ -37,10 +38,35 @@ button#avg-all:active {
   color: var(--font-color-secondary);
 }
 
-button#avg-all {
+button#avg-all,
+button#yscalebtn {
   margin-left: 6px;
 }
 
+/** y scaler **/
+div.yscaler {
+  order: 1;
+  
+  display: flex;
+  align-items: center;
+  
+  padding: 0 16px;
+  border-left: 1px solid var(--background-color-contrast-more);
+}
+
+div.yscaler > span {
+  margin-right: 10px;
+  color: var(--background-color-contrast-more);
+  font-family: var(--font-secondary);
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+}
+
+div.yscaler > div {
+  display: flex;
+  align-items: center;
+}
 
 /** extra anim and logo stuff **/
 
