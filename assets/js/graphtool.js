@@ -1895,8 +1895,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         phoneObj.id = -69;
         
         let oldPhoneObj = brand.phoneObjs.filter(p => p.phone == "Custom Tilt")[0]
-        if (oldPhoneObj) {
-            oldPhoneObj.active && removePhone(oldPhoneObj);
+        if (oldPhoneObj && oldPhoneObj.active) {
+            removePhone(oldPhoneObj);
             phoneObj.id = oldPhoneObj.id;
             phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
         } else {
