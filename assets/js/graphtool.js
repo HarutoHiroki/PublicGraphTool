@@ -320,6 +320,7 @@ let boost = default_bass_shelf;
 let tilt = default_tilt;
 let ear = default_ear;
 let treble = default_treble;
+let df;
 
 // Scales
 let x = d3.scaleLog()
@@ -1709,7 +1710,6 @@ function removeCopies(p) {
 }
 
 function removePhone(p) {
-    let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     p.active = p.pin = false; nextPN = null;
     activePhones = activePhones.filter(q => q.active);
     if (!p.isTarget) {
@@ -1920,7 +1920,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                             : showPhone(p,0,1, initMode));
     
     // -------------------- Custom DF Tilt -------------------- //
-    let df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
+    df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     let customTiltName = "Delta (∆)"
     let dfBase;
     loadFiles(df, function (ch) {
