@@ -49,13 +49,3 @@ body.dark-mode {
     --logo-filter: invert(1.0);
     --svg-filter: invert(1.0);
 }
-
-text.site_name {
-    color: var(--font-color-primary);
-    color: magenta;
-    font-family: var(--font-primary);
-    font-weight: 700;
-    font-size: 14px;
-    
-    filter: var(--svg-filter);
-}

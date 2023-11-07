@@ -147,10 +147,6 @@ g.dBScaler rect[fill="#bbb"] {
     fill: var(--background-color-graph);
 }
 
-svg#fr-graph > g > image {
-    filter: var(--svg-filter);
-}
-
 svg#fr-graph rect {
     pointer-events: all;
 }
@@ -469,98 +465,6 @@ div.graph-sizer {
 
 /*****
 Tools styles *****/
-
-div.customDF {
-    display: flex;
-    align-items: flex-start;
-    box-sizing: border-box;
-    padding: 16px;
-    padding-left: 5px;
-    max-height: 68px;
-    overflow-x: auto;
-    overflow-y: hidden
-}
-
-div.customDF>span {
-    margin-right: 10px;
-    padding-left: 10px;
-    padding-top: 12px;
-    color: var(--background-color-contrast-more);
-    font-family: var(--font-secondary);
-    font-size: 11px;
-    line-height: 1em;
-    text-transform: uppercase;
-    white-space: nowrap
-}
-
-div.customDF .helptip {
-    display: none
-}
-
-div.customDF>div {
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 0 10px 0 0;
-}
-
-div.customDF>button+div {
-    margin-left: 6px
-}
-
-div.customDF>div>input {
-    order: 2;
-    box-sizing: border-box;
-    width: 70px;
-    height: 36px;
-    padding: 10px 0;
-    background-color: var(--background-color-inputs);
-    border: 1px solid var(--background-color-contrast-more);
-    border-right: none;
-    border-left: none;
-    border-radius: 0;
-    outline: none;
-    color: var(--font-color-inputs);
-    font-family: var(--font-secondary);
-    font-size: 11px;
-    line-height: 1em;
-    text-transform: uppercase;
-    text-align: left;
-    padding-left: 11px
-}
-
-div.customDF>div:after {
-    order: 3;
-    content: '';
-    box-sizing: border-box;
-    display: block;
-    width: 6px;
-    height: 36px;
-    background-color: var(--background-color-inputs);
-    border: 1px solid var(--background-color-contrast-more);
-    border-left: none;
-    border-radius: 0 6px 6px 0
-}
-
-div.customDF>div>span {
-    order: 1;
-    padding: 11px 16px;
-    background-color: var(--background-color)!important;
-    border: 1px solid var(--background-color-contrast-more);
-    border-right: none;
-    border-radius: 6px 0 0 6px;
-    color: var(--accent-color-contrast);
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 1em;
-    white-space: nowrap
-}
-
-div.customDF>div.selected>span {
-    background-color: var(--accent-color)!important;
-    border-color: var(--accent-color);
-    color: var(--font-color-secondary)
-}
 
 div.tools {
     order: 1;
@@ -1043,89 +947,7 @@ div.miscTools button#theme:active {
     color: var(--font-color-secondary);
 }
 
-/** extra panel **/
-
-div.extra-panel {
-    flex-direction: column;
-    overflow: auto;
-}
-
-div.extra-panel > div {
-    margin: 0 0 1em 0;
-}
-
-div.extra-panel h5 {
-    margin: 0 0 1em 0;
-    color: var(--accent-color-contrast);
-}
-
-div.extra-panel span {
-    color: var(--background-color-contrast-more);
-}
-
-div.extra-panel > div.extra-eq > div.select-eq-phone,
-div.extra-panel > div.extra-eq > div.filters,
-div.extra-panel div.settings-row {
-    margin: 0 0 0.5em 0;
-}
-
-div.extra-panel > div.extra-eq > div.select-eq-phone > select {
-    width: 99%;
-}
-
-div.extra-panel > div.extra-eq > div.filters-header > span,
-div.extra-panel > div.extra-eq > div.filters > div.filter > span {
-    width: 24%;
-    display: inline-block;
-}
-
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='checkbox'] {
-    width: 20%;
-    margin: 0;
-    -webkit-appearance: checkbox;
-    appearance: checkbox;
-}
-
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > select {
-    width: 70%;
-}
-
-div.extra-panel div.settings-row > span {
-    width: 30%;
-    display: inline-block;
-}
-
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input,
-div.extra-panel div.settings-row > span > input {
-    width: 90%;
-}
-
-div.extra-eq-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    text-align: center;
-    padding: calc(50vh - 1em) 0;
-    font-weight: bold;
-}
-
-div.extra-panel button {
-    margin-bottom: 4px !important;
-}
-
-div.extra-panel > div.extra-tone-generator input[name='tone-generator-freq'] {
-    width: 100%;
-    border: 1px solid var(--accent-color-contrast);
-    
-}
-
-/*****
-Targets styles *****/
+/***** Targets styles *****/
 
 div.targets {
     display: flex;

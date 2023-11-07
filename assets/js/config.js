@@ -1,5 +1,5 @@
 // Configuration options
-const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. Which graphs to display on initial load. Note: Share URLs will override this set
+const init_phones = [],// Optional. Which graphs to display on initial load. Note: Share URLs will override this set
       DIR = "data/",                                // Directory where graph files are stored
       default_channels = ["L","R"],                 // Which channels to display. Avoid javascript errors if loading just one channel per phone
       default_normalization = "dB",                 // Sets default graph normalization mode. Accepts "dB" or "Hz"
@@ -9,12 +9,12 @@ const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. 
       alt_layout = true,                            // Toggle between classic and alt layouts
       alt_sticky_graph = true,                      // If active graphs overflows the viewport, does the graph scroll with the page or stick to the viewport?
       alt_animated = true,                          // Determines if new graphs are drawn with a 1-second animation, or appear instantly
-      alt_header = false,                            // Display a configurable header at the top of the alt layout
+      alt_header = true,                            // Display a configurable header at the top of the alt layout
       alt_tutorial = true,                          // Display a configurable frequency response guide below the graph
       site_url = '/',                               // URL of your graph "homepage"
       share_url = true,                             // If true, enables shareable URLs
       watermark_text = "HarutoHiroki",              // Optional. Watermark appears behind graphs
-      watermark_image_url = "assets/images/haruto.svg",   // Optional. If image file is in same directory as config, can be just the filename
+      watermark_image_url = "assets/images/haruto.svg", // Optional. If image file is in same directory as config, can be just the filename
       page_title = "HarutoHiroki",                  // Optional. Appended to the page title if share URLs are enabled
       page_description = "View and compare frequency response graphs for earphones",
       accessories = true,                           // If true, displays specified HTML at the bottom of the page. Configure further below
@@ -34,18 +34,20 @@ const init_phones = ["Haruto Target","Elysian Annihilator (2023)"],// Optional. 
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
       extraToneGeneratorEnabled = true,             // Enable tone generator function
-      PHONE_BOOK = "/phone_book.json",              // Path to JSON file containing phone metadata
+      PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
+      REWenabled = false,                           // Enable REW import function
       default_bass_shelf = 8,                       // Default Custom DF bass shelf value
       default_tilt = -0.8,                          // Default Custom DF tilt value
-      default_DF_name = "Diffuse Field",            // Default RAW DF name
-      dfBaseline = true;                            // If true, DF is used as baseline when custom df tilt is on
+      default_ear = 0,                              // Default Custom DF ear gain value
+      default_DF_name = "Diffuse Field",                        // Default RAW DF name
+      dfBaseline = false,                           // If true, DF is used as baseline when custom df tilt is on
+      tiltableTargets = ["Diffuse Field"];                         // Targets that are allowed to be tilted
 
 // Specify which targets to display
 const targets = [
     { type:"Reference", files:["Haruto", "Haruto 🅱️ass"] },
     { type:"Neutral",    files:["Diffuse Field","Etymotic","Free Field","IEF Neutral"] },
     { type:"Reviewer",   files:["Antdroid","Banbeucmas","HBB","Precogvision","Super Review 22","Super Review 21","Timmy","VSG"] },
-//  { type:"Compensation", files:["Oratory1990 Comp"]},
     { type:"IEF Members", files:["Brownie", "Brownie Unsmoothened", "Listener (No Bass Shelf)", "Rennsport"]},
     { type:"Preference", files:["Harman IE 2019v2","Harman IE 2017v2","AutoEQ","Rtings","Sonarworks"] }
 ];
@@ -66,12 +68,12 @@ function watermark(svg) {
     
     if ( watermark_image_url ) {
         wm.append("image")
-            .attrs({x:-64, y:-64, width:128, height:128, "xlink:href":watermark_image_url});
+            .attrs({id:'logo', x:-64, y:-64, width:128, height:128, "xlink:href":watermark_image_url, "class":"graph_logo"});
     }
     
     if ( watermark_text ) {
         wm.append("text")
-            .attrs({x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
+            .attrs({id:'wtext', x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
             .text(watermark_text);
     }
 
@@ -124,7 +126,7 @@ setLayout();
 const 
     // Short text, center-aligned, useful for a little side info, credits, links to measurement setup, etc. 
     simpleAbout = `
-        <p class="center">This web software is based on the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project. <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a> definition source.</p>
+        <p class="center">This graph database is maintained by HarutoHiroki with frequency responses generated via an "IEC60318-4"-compliant ear simulator. This web software is based on the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project, with <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a>'s definition source.</p>
     `,
     // Which of the above variables to actually insert into the page
     whichAccessoriesToUse = simpleAbout;
@@ -141,18 +143,6 @@ const linkSets = [
                 url: "https://iems.audiodiscourse.com/"
             },
             {
-                name: "Bad Guy",
-                url: "https://hbb.squig.link/"
-            },
-            {
-                name: "Banbeucmas",
-                url: "https://banbeu.com/graph/tool/"
-            },
-            {
-                name: "HypetheSonics",
-                url: "https://www.hypethesonics.com/iemdbc/"
-            },
-            {
                 name: "In-Ear Fidelity",
                 url: "https://crinacle.com/graphs/iems/graphtool/"
             },
@@ -165,12 +155,8 @@ const linkSets = [
                 url: "https://squig.link/"
             },
             {
-                name: "Timmy (Gizaudio)",
+                name: "Timmy",
                 url: "https://timmyv.squig.link/"
-            },
-            {
-                name: "Rohsa",
-                url: "https://rohsa.gitlab.io/graphtool/"
             },
         ]
     },
@@ -184,6 +170,10 @@ const linkSets = [
             {
                 name: "In-Ear Fidelity",
                 url: "https://crinacle.com/graphs/headphones/graphtool/"
+            },
+            {
+                name: "Listener",
+                url: "https://listener800.github.io/"
             },
             {
                 name: "Super* Review",
@@ -266,11 +256,31 @@ let tutorialDefinitions = [
     {
         name: 'Presence',
         width: '5.9%',
-        description: 'The presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
+        description: 'The Presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
     },
     {
-        name: 'Brilliance',
+        name: 'Treble',
         width: '17.4%',
-        description: 'The brilliance range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
+        description: 'The Treble range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
     }
 ]
+
+// o == offset
+// l ==
+// p == phone
+// id == name
+// lr == default curve
+// v == valid channels
+/*
+let phoneObj = {
+                    isTarget: false,
+                    brand: "Average",
+                    dispName: "All SPL",
+                    phone: "All SPL",
+                    fullName: "Average All SPL",
+                    fileName: "Average All SPL",
+                    rawChannels: "R",
+                    isDynamic: false,
+                    id: "AVG"
+                };
+*/

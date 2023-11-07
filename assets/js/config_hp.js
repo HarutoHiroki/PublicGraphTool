@@ -36,12 +36,14 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       extraToneGeneratorEnabled = true,             // Enable tone generator function
       num_samples = 5,                              // Number of samples to average for smoothing
       scale_smoothing = 0.2,                        // Smoothing factor for scale transitions
-      PHONE_BOOK = "phone_book_hp.json",            // Phone book location
+      PHONE_BOOK = "phone_book_hp.json",            // Phone book file path & name
+      REWenabled = false,                           // Enable REW import function
       default_bass_shelf = 8,                       // Default Custom DF bass shelf value
       default_tilt = -0.8,                          // Default Custom DF tilt value
-      default_DF_name = "Diffuse Field",            // Default RAW DF name
-      dfBaseline = true;                            // If true, DF is used as baseline when custom df tilt is on
-
+      default_ear = 0,                              // Default Custom DF ear gain value
+      default_DF_name = "KEMAR DF",                 // Default RAW DF name
+      dfBaseline = false,                           // If true, DF is used as baseline when custom df tilt is on
+      tiltableTargets = ["KEMAR DF"];               // Targets that are allowed to be tilted
 
 // Specify which targets to display
 const targets = [
@@ -66,12 +68,12 @@ function watermark(svg) {
     
     if ( watermark_image_url ) {
         wm.append("image")
-            .attrs({x:-64, y:-64, width:128, height:128, "xlink:href":watermark_image_url});
+            .attrs({id:'logo', x:-64, y:-64, width:128, height:128, "xlink:href":watermark_image_url, "class":"graph_logo"});
     }
     
     if ( watermark_text ) {
         wm.append("text")
-            .attrs({x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
+            .attrs({id:'wtext', x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
             .text(watermark_text);
     }
 

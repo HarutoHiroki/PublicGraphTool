@@ -10,8 +10,17 @@
 - Reorganised code
 - Moved targets to a different folder for organization
 - Moved phone_book outside for easier access
-- Added a function to average all active graphs
-- Custom Diffuse Field Tilt (NEW)
+- Added a function to average all active graphs (requested by listener)
+- Custom Diffuse Field Tilt (requested by listener)
+- Restyled EQ tab
+- EQable pink noise in EQ tab (requested by listener)
+- Added the ability to upload your own test track to EQ (requested by rollo)
+- Added a button to disable and enable all EQ bands (requested by SK)
+- Tone generator now EQable (requested by SK)
+- Added a Channel balance slider
+- Added a song progress slider to the EQ demo section (requested by XiaoShe)
+- Added Ear Gain customisation to custom tilt (requested by listener)
+- Made any target tiltable (requested by listener)
 
 # TODO
 - Implement a way to measure the SPL of an IEM and decide whether to upload it or not, skipping REW

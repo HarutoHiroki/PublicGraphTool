@@ -1,3 +1,10 @@
+/** hidden class **/
+.hidden {
+  display: none !important;
+}
+
+/** Average All button **/
+
 button#avg-all {
   position: relative;
   
@@ -32,4 +39,504 @@ button#avg-all:active {
 
 button#avg-all {
   margin-left: 6px;
+}
+
+
+/** extra anim and logo stuff **/
+
+text.site_name {
+    color: var(--font-color-primary);
+    color: magenta;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    font-size: 14px;
+    
+    filter: var(--svg-filter);
+}
+
+image.graph_logo {
+    filter: var(--svg-filter);
+}
+
+
+/** Custom DF tilt**/
+
+div.customDF {
+  display: flex;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: 16px;
+  padding-left: 5px;
+  max-height: 68px;
+  overflow-x: auto;
+  overflow-y: hidden
+}
+
+div.customDF>span {
+  margin-right: 10px;
+  padding-left: 10px;
+  padding-top: 12px;
+  color: var(--background-color-contrast-more);
+  font-family: var(--font-secondary);
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+  white-space: nowrap
+}
+
+div.customDF .helptip {
+  display: none
+}
+
+div.customDF>div {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 0;
+}
+
+div.customDF>button+div {
+  margin-left: 6px
+}
+
+div.customDF>div>input {
+  order: 2;
+  box-sizing: border-box;
+  width: 70px;
+  height: 36px;
+  padding: 10px 0;
+  background-color: var(--background-color-inputs);
+  border: 1px solid var(--background-color-contrast-more);
+  border-right: none;
+  border-left: none;
+  border-radius: 0;
+  outline: none;
+  color: var(--font-color-inputs);
+  font-family: var(--font-secondary);
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+  text-align: left;
+  padding-left: 11px
+}
+
+div.customDF>div:after {
+  order: 3;
+  content: '';
+  box-sizing: border-box;
+  display: block;
+  width: 6px;
+  height: 36px;
+  background-color: var(--background-color-inputs);
+  border: 1px solid var(--background-color-contrast-more);
+  border-left: none;
+  border-radius: 0 6px 6px 0
+}
+
+div.customDF>div>span {
+  order: 1;
+  padding: 11px 16px;
+  background-color: var(--background-color)!important;
+  border: 1px solid var(--background-color-contrast-more);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  color: var(--accent-color-contrast);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1em;
+  white-space: nowrap
+}
+
+div.customDF>div.selected>span {
+  background-color: var(--accent-color)!important;
+  border-color: var(--accent-color);
+  color: var(--font-color-secondary)
+}
+
+div.customDF>button {
+  padding: 11px 16px;
+  
+  background-color: var(--background-color) !important;
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 6px;
+  
+  color: var(--accent-color-contrast);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1em;
+  
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+div.customDF>button:active {
+  box-sizing: border-box;
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  
+  color: var(--font-color-secondary);
+}
+
+/** extra panel **/
+
+div.extra-panel {
+  flex-direction: column;
+  overflow: auto;
+}
+
+div.extra-panel > div {
+  margin: 0 0 1em 0;
+}
+
+div.extra-panel h5 {
+  margin: 0 0 1em 0;
+  color: var(--accent-color-contrast);
+}
+
+div.extra-panel span {
+  color: var(--background-color-contrast-more);
+}
+
+div.extra-panel > div.extra-eq > div.select-eq-phone,
+div.extra-panel > div.extra-eq > div.filters,
+div.extra-panel > div.settings-row,
+div.extra-panel > div.eq-demo {
+  margin: 0 0 0.5em 0;
+}
+
+div.extra-panel > div.extra-eq > div.select-eq-phone > select {
+  width: 100%;
+  z-index: 1;
+  outline: none;
+
+  display: grid;
+  grid-template-areas: "select";
+  align-items: center;
+  position: relative;
+
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 0.25em;
+  padding: 0.25em 0.5em;
+
+  cursor: pointer;
+  color: var(--accent-color-contrast);
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-repeat: no-repeat, repeat;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath d='M0 0l5 4.998L10 0z' fill='%238c8c8c'/%3E%3C/svg%3E");
+  background-color: var(--background-color-graph) !important;
+  background-position: right 0.7em top 50%, 0 0;
+  background-size: 0.65em auto, 100%;
+}
+
+div.extra-panel > div.extra-eq > div.filters-header > span,
+div.extra-panel > div.extra-eq > div.filters > div.filter > span {
+  width: 25%;
+  display: inline-block;
+}
+
+div.extra-panel > div.extra-eq > div.filters-header,
+div.extra-panel > div.extra-eq > div.filters > div.filter {
+  box-sizing: border-box;
+  display: flex;
+  gap: 7px;
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='checkbox'] {
+  width: 20%;
+  margin: 0;
+  padding: 0 !important;
+  appearance: none;
+  background-color: var(--background-color) !important;
+  font: inherit;
+  width: 1.05em;
+  height: 1.05em;
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 0.25em;
+  transform: translateY(-0.075em);
+  cursor: pointer;
+  vertical-align: middle;
+  place-content: center;
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]::before {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  background-color: var(--accent-color);
+  transform: scale(0);
+  transition: transform 0.2s ease-in-out;
+  transform-origin: bottom left;
+  display: block;
+  margin: 2px auto;
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > select,
+div.extra-eq > div.eq-demo > select {
+  width: 70%;
+  z-index: 1;
+  outline: none;
+  margin-top: 2px;
+  cursor: pointer;
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 0.25em;
+  padding: 0.3em 0.5em;
+
+  color: var(--accent-color-contrast);
+  
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-repeat: no-repeat, repeat;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath d='M0 0l5 4.998L10 0z' fill='%238c8c8c'/%3E%3C/svg%3E");
+  background-color: var(--background-color-graph) !important;
+  background-position: right 0.7em top 50%, 0 0;
+  background-size: 0.65em auto, 100%;
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input,
+div.extra-panel div.settings-row > span > input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 0.25em;
+  padding: 0.3em 0.5em;
+  color: var(--accent-color-contrast);
+  background-color: var(--background-color-graph) !important;
+}
+
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input {
+  margin-top: 2px;
+}
+
+span:has(input[name="freq"]),
+span:has(input[name="gain"]),
+span:has(input[name="autoeq-from"]),
+span:has(input[name="autoeq-to"]),
+span:has(input[name="autoeq-gain-from"]),
+span:has(input[name="autoeq-gain-to"]),
+span:has(input[name="tone-generator-from"]),
+span:has(input[name="tone-generator-to"]),
+span:has(input[name="vol-left"]),
+span:has(input[name="vol-right"]) {
+    position: relative;
+}
+
+span:has(input[name="freq"]):after,
+span:has(input[name="gain"]):after,
+span:has(input[name="autoeq-from"]):after,
+span:has(input[name="autoeq-to"]):after,
+span:has(input[name="autoeq-gain-from"]):after,
+span:has(input[name="autoeq-gain-to"]):after,
+span:has(input[name="tone-generator-from"]):after,
+span:has(input[name="tone-generator-to"]):after,
+span:has(input[name="vol-left"]):after,
+span:has(input[name="vol-right"]):after {
+    position: absolute;
+    top: 3px;
+    right: 0px;
+    
+    content: 'Hz';
+    
+    box-sizing: border-box;
+    padding: 6px 10px 6px 0;
+    
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    
+    font-family: var(--font-secondary);
+    font-size: 11px;
+    line-height: 11px;
+    
+    pointer-events: none;
+}
+
+span:has(input[name="autoeq-from"]):after,
+span:has(input[name="autoeq-to"]):after,
+span:has(input[name="autoeq-gain-from"]):after,
+span:has(input[name="autoeq-gain-to"]):after,
+span:has(input[name="tone-generator-from"]):after,
+span:has(input[name="tone-generator-to"]):after,
+span:has(input[name="vol-left"]):after,
+span:has(input[name="vol-right"]):after {
+  top: 1px;
+}
+
+span:has(input[name="gain"]):after,
+span:has(input[name="autoeq-gain-from"]):after,
+span:has(input[name="autoeq-gain-to"]):after,
+span:has(input[name="vol-left"]):after,
+span:has(input[name="vol-right"]):after {
+    content: 'dB';
+}
+
+div.extra-panel div.settings-row,
+div.extra-panel div.auto-eq-button,
+div.extra-panel div.filters-button,
+div.extra-panel div.extra-upload {
+  width: 100%;
+  margin: 4px 0 0 0;
+  box-sizing: border-box;
+  display: flex;
+  gap: 7px;
+}
+
+div.extra-panel h3,
+div.extra-panel h4 {
+  color: var(--font-color-inputs);
+  margin-bottom: 4px;
+}
+
+div.extra-panel div.extra-upload > button {
+  width: 33.3%;
+}
+
+div.extra-panel div.settings-row > span {
+  width: 25%;
+  align-self: center;
+}
+
+div.extra-panel div.settings-row > span[name="title"] {
+  width: 50%;
+}
+
+div.extra-panel div.filters-button > button{
+  width: 25%;
+  padding: 0.7em;
+}
+
+div.extra-panel div.auto-eq-button > button {
+  width: 50%;
+  padding: 0.9em;
+}
+
+div.extra-panel div.exports > button {
+  width: 100%;
+  padding: 0.9em;
+}
+
+div.extra-eq-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  text-align: center;
+  padding: calc(50vh - 1em) 0;
+  font-weight: bold;
+}
+
+div.extra-panel button {
+  margin-bottom: 4px !important;
+}
+
+div.extra-eq > div.eq-demo {
+  margin: 0px 0 6px 0; 
+  display: flex;
+  box-sizing: border-box;
+  gap: 7px;
+  width: 100%;
+  align-items: center;
+}
+
+div.extra-eq > div.eq-demo > select {
+  width: 25% !important;
+}
+
+div.extra-eq > div.eq-demo > button {
+  width: 25% !important;
+  margin: 0 !important;
+}
+
+div.extra-eq > div.eq-demo > span {
+  text-align: center;
+}
+
+div.extra-eq > div.eq-demo > input[name="demo-time"],
+div.extra-eq > div.eq-demo > input[name="tone-generator-freq"],
+div.settings-row > input[name="balance-vol"] {
+  width: 60% !important;
+  margin: 0;
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 1em;
+  accent-color: var(--accent-color-contrast);
+  background-color: var(--background-color-graph) !important;
+}
+
+div.extra-eq > div.eq-demo > input[name="tone-generator-freq"] {
+  width: 65% !important;
+}
+
+div.settings-row > input[name="balance-vol"] {
+  width: 100% !important;
+  margin:auto;
+}
+
+div.extra-eq > div.eq-demo > span[name="current-freq"] {
+  width: 35% !important;
+  text-align: left;
+}
+
+div.extra-panel div.filters-button > button[class="pink-noise selected"] {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.volume-button {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.volume-button:hover .volume-slider {
+  display: block;
+}
+
+.volume-slider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  width: 100px;
+  background-color: transparent;
+  border: transparent;
+  padding: 5px;
+  border-radius: 5px;
+  color: #fff;
+  accent-color: var(--accent-color-contrast);
+}
+
+.volume-slider input[type="range"] {
+  width: 100%;
+  background: var(--background-color-graph);
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 1em;
+  outline: none;
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--accent-color-contrast);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Style the volume icon */
+.volume-icon {
+  color: var(--accent-color-contrast) !important;
+  fill: var(--accent-color-contrast) !important;
 }
