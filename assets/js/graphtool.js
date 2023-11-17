@@ -1910,10 +1910,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         });
     }
 
-    inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
-                            : showPhone(p,0,1, initMode));
-    
-    // -------------------- Custom DF Tilt -------------------- //
     df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
     loadFiles(df, function (ch) {
         df.rawChannels = ch;
@@ -1928,6 +1924,11 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             doc.select("#cusdf-treb").node().value = treble;
         }
     });
+    
+    inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
+    : showPhone(p,0,1, initMode));
+    
+    // -------------------- Custom DF Tilt -------------------- //
     let customTiltName = default_DF_name;
     let tiltTHIS = doc.select("#cusdf-tiltTHIS");
     // if tiltTHIS is clicked, switch df to current active target if exists
@@ -2000,8 +2001,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         phoneObj.id = -69;
         
         let oldPhoneObj = brand.phoneObjs.filter(p => p.phone == "Custom Tilt")[0]
-        if (oldPhoneObj && oldPhoneObj.active) {
-            removePhone(oldPhoneObj);
+        if (oldPhoneObj) {
+            // removePhone(oldPhoneObj);
             phoneObj.id = oldPhoneObj.id;
             phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
         } else {
