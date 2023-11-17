@@ -15,7 +15,6 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
       share_url = true,                             // If true, enables shareable URLs
       watermark_text = "HarutoHiroki",              // Optional. Watermark appears behind graphs
       watermark_image_url = "assets/images/haruto.svg", // Optional. If image file is in same directory as config, can be just the filename
-      preference_bounds = "assets/images/bounds.png", // Preference bounds image
       page_title = "HarutoHiroki",                  // Optional. Appended to the page title if share URLs are enabled
       page_description = "View and compare frequency response graphs for earphones",
       accessories = true,                           // If true, displays specified HTML at the bottom of the page. Configure further below
@@ -33,16 +32,7 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
       extraUploadEnabled = true,                    // Enable upload function
       extraEQEnabled = true,                        // Enable parametic eq function
       extraEQBands = 10,                            // Default EQ bands available
-      extraEQBandsMax = 20,                         // Max EQ bands available
-      PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
-      REWenabled = false,                           // Enable REW import function
-      default_bass_shelf = 8,                       // Default Custom DF bass shelf value
-      default_tilt = -0.8,                          // Default Custom DF tilt value
-      default_ear = 0,                              // Default Custom DF ear gain value
-      default_treble = 0,                           // Default Custom DF treble gain value
-      default_DF_name = "Diffuse Field",                        // Default RAW DF name
-      dfBaseline = false,                           // If true, DF is used as baseline when custom df tilt is on
-      tiltableTargets = ["Diffuse Field"];                         // Targets that are allowed to be tilted
+      extraEQBandsMax = 20;                         // Max EQ bands available
 
 // Specify which targets to display
 const targets = [
@@ -53,6 +43,16 @@ const targets = [
     { type:"Preference", files:["Harman IE 2019v2","Harman IE 2017v2","AutoEQ","Rtings","Sonarworks"] }
 ];
 
+// Haruto's Addons
+const  preference_bounds = "assets/images/bounds.png", // Preference bounds image
+       PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
+       default_DF_name = "Diffuse Field",           // Default RAW DF name
+       dfBaseline = true,                           // If true, DF is used as baseline when custom df tilt is on
+       default_bass_shelf = 8,                      // Default Custom DF bass shelf value
+       default_tilt = -0.8,                         // Default Custom DF tilt value
+       default_ear = 0,                             // Default Custom DF ear gain value
+       default_treble = 0,                          // Default Custom DF treble gain value
+       tiltableTargets = ["Diffuse Field"];         // Targets that are allowed to be tilted
 
 
 // *************************************************************

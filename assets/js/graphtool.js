@@ -320,7 +320,7 @@ let boost = default_bass_shelf;
 let tilt = default_tilt;
 let ear = default_ear;
 let treble = default_treble;
-let df;
+let df, dfBase;
 
 // Scales
 let x = d3.scaleLog()
@@ -1788,48 +1788,42 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     
     if (ifURL) {
         let url = targetWindow.location.href,
-            par = "share=";
-            emb = "embed";
-            cDFb = "bass=";
-            cDFt = "tilt=";
-            cDFtr = "treble=";
-            cDFe = "ear=";
-        baseURL = url.split("?").shift();
-        let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
-        let str = match && match[1] ? match[1].replace("share=", "") : null;
-        if (url.includes(par) && url.includes(emb)) {
-            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
-            initReq = str.split(",");
-            loadFromShare = 2;
-        } else if (url.includes(par)) {
-            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
-            initReq = str.split(",");
-            loadFromShare = 1;
-        }
+        par = "share=",
+        emb = "embed",
+        cDFb = "bass=",
+        cDFt = "tilt=",
+        cDFtr = "treble=",
+        cDFe = "ear=";
+    baseURL = url.split("?").shift();
+    let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
+    let str = match && match[1] ? match[1].replace("share=", "") : null;
+    let cTiltParams = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)&tilt=([^&]+)&treble=([^&]+)&ear=([^&]+)/);
+    if (url.includes(par) && url.includes(emb)) {
+        //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+        initReq = str.split(",");
+        loadFromShare = 2;
+    } else if (url.includes(par)) {
+        //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+        initReq = str.split(",");
+        loadFromShare = 1;
+    }
 
-        if (url.includes(cDFb)) {
-            let match = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)/);
-            let str = match && match[1] ? match[1].replace("bass=", "") : null;
-            boost = parseFloat(str);
-        }
-        
-        if (url.includes(cDFt)) {
-            let match = decodeURIComponent(url.replace(/_/g," ")).match(/tilt=([^&]+)/);
-            let str = match && match[1] ? match[1].replace("tilt=", "") : null;
-            tilt = parseFloat(str);
-        }
-
-        if (url.includes(cDFtr)) {
-            let match = decodeURIComponent(url.replace(/_/g," ")).match(/treble=([^&]+)/);
-            let str = match && match[1] ? match[1].replace("treble=", "") : null;
-            treble = parseFloat(str);
-        }
-
-        if (url.includes(cDFe)) {
-            let match = decodeURIComponent(url.replace(/_/g," ")).match(/ear=([^&]+)/);
-            let str = match && match[1] ? match[1].replace("ear=", "") : null;
-            ear = parseFloat(str);
-        }
+    if (url.includes(cDFb)) {
+        boost = parseFloat(cTiltParams[1]);
+    }
+    
+    if (url.includes(cDFt)) {
+        tilt = parseFloat(cTiltParams[2]);
+    }
+    
+    if (url.includes(cDFtr)) {
+        treble = parseFloat(cTiltParams[3]);
+    }
+    
+    if (url.includes(cDFe)) {
+        ear = parseFloat(cTiltParams[4]);
+    }
+    
 
     }
     let isInit = initReq ? f => initReq.indexOf(f) !== -1
@@ -1921,15 +1915,20 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     
     // -------------------- Custom DF Tilt -------------------- //
     df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-    let customTiltName = "Delta (∆)"
-    let dfBase;
     loadFiles(df, function (ch) {
         df.rawChannels = ch;
         showPhone(df, false);
         dfBase = getBaseline(df);
         removePhone(df);
+        if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
+            updateDF(boost, tilt, ear, treble);
+            doc.select("#cusdf-bass").node().value = boost;
+            doc.select("#cusdf-tilt").node().value = tilt;
+            doc.select("#cusdf-ear").node().value = ear;
+            doc.select("#cusdf-treb").node().value = treble;
+        }
     });
-
+    let customTiltName = default_DF_name;
     let tiltTHIS = doc.select("#cusdf-tiltTHIS");
     // if tiltTHIS is clicked, switch df to current active target if exists
     tiltTHIS.on("click", function () {
@@ -2053,14 +2052,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         treble = +this.value;
         updateDF(boost, tilt, ear, treble, "treble");
     });
-                            
-    // shareable DF tilt
-    if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
-        loadFiles(df, function (ch) {
-            df.rawChannels = ch;
-            updateDF(boost, tilt, ear, treble);
-        });
-    }
 
     // Standard 10dB delta used by Crinacle and Headphones.com button
     doc.select("#cusdf-10db").on("click", function () {
