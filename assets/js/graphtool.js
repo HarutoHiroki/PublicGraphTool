@@ -969,6 +969,7 @@ function loadFiles(p, callback) {
             alert("Headphone not found!");
         } else {
             let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
+            ch = ch.filter(c => c !== null); // Remove null elements
             callback(ch);
         }
     });
@@ -1109,7 +1110,7 @@ function setCurves(p, avg, lr, samp) {
     if (samp===undefined) samp = avg ? false : LR.length===1||p.ssamp||false;
     else { p.ssamp = samp; if (samp) avg = false; }
     let dx = +avg - +p.avg,
-        n  = sampnums.length,
+        n  = p.channels.length/2,
         selCh = (l,i) => l.slice(i*n,(i+1)*n);
     p.avg = avg;
     p.samp = samp = n>1 && samp;
@@ -2660,7 +2661,7 @@ function addExtra() {
                 let fullName = name + (name.match(/ Target$/i) ? "" : " Target");
                 let existsTargets = targets.reduce((a, b) => a.concat(b.files), []).map(f => f += " Target");
                 if (existsTargets.indexOf(fullName) >= 0) {
-                    alert("This target already exists on this tool, please select it instead of upload.");
+                    alert("This target already exists on this tool, please select it instead of uploading.");
                     return;
                 }
                 let phoneObj = {
@@ -2916,7 +2917,7 @@ function addExtra() {
             p => p.fullName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
-            alert("Please select model and add atleast one filter before export.");
+            alert("Please select model and add at least one filter before exporting.");
             return;
         }
         let preamp = Equalizer.calc_preamp(
@@ -2947,7 +2948,7 @@ function addExtra() {
             p => p.fullName == phoneSelected && p.eq)[0] || { fullName: "Unnamed" };
         let filters = elemToFilters();
         if (!filters.length) {
-            alert("Please add atleast one filter before export.");
+            alert("Please add at least one filter before exporting.");
             return;
         }
         let graphicEQ = Equalizer.as_graphic_eq(filters);
@@ -2994,7 +2995,7 @@ function addExtra() {
         let targetObj = (activePhones.filter(p => p.isTarget)[0] ||
             activePhones.filter(p => p !== phoneObj && !p.isTarget)[0]);
         if (!phoneObj || !targetObj) {
-            alert("Please select model and target, if there are no target and multiple models are displayed then the second one will be selected as target.");
+            alert("Please select model and target, if there are no targets and multiple models are displayed then the second one will be selected as target.");
             return;
         }
         let autoEQOverlay = document.querySelector(".extra-eq-overlay");
