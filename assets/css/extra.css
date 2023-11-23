@@ -271,7 +271,6 @@ div.extra-panel > div.extra-eq > div.filters > div.filter {
 }
 
 div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='checkbox'] {
-  width: 20%;
   margin: 0;
   padding: 0 !important;
   appearance: none;
@@ -433,9 +432,19 @@ div.extra-panel div.settings-row > span[name="title"] {
   width: 50%;
 }
 
-div.extra-panel div.filters-button > button{
+div.extra-panel div.filters-button > span[class="eqopts"] {
   width: 25%;
+  display: inline-block;
+}
+
+div.extra-panel div.filters-button > span[class="eqopts"] > button {
+  width: 100%;
   padding: 0.7em;
+}
+
+div.extra-panel div.filters-button > span[class="eqopts"] > button.add-filter,
+div.extra-panel div.filters-button > span[class="eqopts"] > button.remove-filter {
+  width: calc(50% - 3.5px);
 }
 
 div.extra-panel div.auto-eq-button > button {

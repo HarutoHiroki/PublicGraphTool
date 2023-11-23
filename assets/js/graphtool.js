@@ -98,8 +98,8 @@ doc.html(`
             <span>Bass (dB)</span>
           </div>
           <div>
-          <input type="number" inputmode="decimal" id="cusdf-treb" value="`+ default_treble +`" step="0.1""></input>
-          <span>Treble (dB)</span>
+            <input type="number" inputmode="decimal" id="cusdf-treb" value="`+ default_treble +`" step="0.1""></input>
+            <span>Treble (dB)</span>
           </div>
           <div>
             <input type="number" inputmode="decimal" id="cusdf-ear" value="`+ default_ear +`" step="0.1""></input>
@@ -199,10 +199,10 @@ doc.html(`
                 </div>
               </div>
               <div class="filters-button">
-                <button class="add-filter">＋</button>
-                <button class="remove-filter">－</button>
-                <button class="sort-filters">Sort</button>
-                <button class="disable-filters">Disable All</button>
+                <span class="eqopts"><button class="add-filter" style="margin-right:7px;">+</button><button class="remove-filter">-</button></span>
+                <span class="eqopts"><button class="sort-filters">Sort</button></span>
+                <span class="eqopts"><button class="disable-filters">Disable</button></span>
+                <span class="eqopts"><button class="save-filters">Save EQ</button></span>
               </div>
               <h4 style="margin: 6px 0 3px 0" >AutoEQ</h4>
               <div class="settings-row" style="margin:0 0 2px 0">
@@ -1789,42 +1789,42 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     
     if (ifURL) {
         let url = targetWindow.location.href,
-        par = "share=",
-        emb = "embed",
-        cDFb = "bass=",
-        cDFt = "tilt=",
-        cDFtr = "treble=",
-        cDFe = "ear=";
-    baseURL = url.split("?").shift();
-    let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
-    let str = match && match[1] ? match[1].replace("share=", "") : null;
-    let cTiltParams = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)&tilt=([^&]+)&treble=([^&]+)&ear=([^&]+)/);
-    if (url.includes(par) && url.includes(emb)) {
-        //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
-        initReq = str.split(",");
-        loadFromShare = 2;
-    } else if (url.includes(par)) {
-        //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
-        initReq = str.split(",");
-        loadFromShare = 1;
-    }
+            par = "share=",
+            emb = "embed",
+            cDFb = "bass=",
+            cDFt = "tilt=",
+            cDFtr = "treble=",
+            cDFe = "ear=";
+        baseURL = url.split("?").shift();
+        let match = decodeURIComponent(url.replace(/_/g," ")).match(/share=([^&]+)/);
+        let str = match && match[1] ? match[1].replace("share=", "") : null;
+        let cTiltParams = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)&tilt=([^&]+)&treble=([^&]+)&ear=([^&]+)/);
+        if (url.includes(par) && url.includes(emb)) {
+            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            initReq = str.split(",");
+            loadFromShare = 2;
+        } else if (url.includes(par)) {
+            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
+            initReq = str.split(",");
+            loadFromShare = 1;
+        }
 
-    if (url.includes(cDFb)) {
-        boost = parseFloat(cTiltParams[1]);
-    }
-    
-    if (url.includes(cDFt)) {
-        tilt = parseFloat(cTiltParams[2]);
-    }
-    
-    if (url.includes(cDFtr)) {
-        treble = parseFloat(cTiltParams[3]);
-    }
-    
-    if (url.includes(cDFe)) {
-        ear = parseFloat(cTiltParams[4]);
-    }
-    
+        if (url.includes(cDFb)) {
+            boost = parseFloat(cTiltParams[1]);
+        }
+        
+        if (url.includes(cDFt)) {
+            tilt = parseFloat(cTiltParams[2]);
+        }
+        
+        if (url.includes(cDFtr)) {
+            treble = parseFloat(cTiltParams[3]);
+        }
+        
+        if (url.includes(cDFe)) {
+            ear = parseFloat(cTiltParams[4]);
+        }
+        
 
     }
     let isInit = initReq ? f => initReq.indexOf(f) !== -1
@@ -2862,6 +2862,25 @@ function addExtra() {
             applyEQ();
         }
     });
+    // Saving filters as a separate comparable phone
+    let savedCounter = 1;
+    document.querySelector("div.extra-eq button.save-filters").addEventListener("click", () => {
+        let phoneSelected = eqPhoneSelect.value;
+        let phoneObj = phoneSelected && activePhones.filter(
+            p => p.fullName == phoneSelected && p.eq)[0];
+        let filters = elemToFilters(true);
+        if (!phoneObj || !filters.length) {
+            alert("Please select model and add at least one filter before saving.");
+            return;
+        }
+
+        let phoneEQ = { name: phoneObj.phone + " EQ Saved " + savedCounter };
+        let phoneObjEQ = addOrUpdatePhone(phoneObj.brand, phoneEQ,
+            phoneObj.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null));
+        phoneObjEQ.eqParent = phoneObj;
+        showPhone(phoneObjEQ, false);
+        savedCounter++;
+    });
     // Import filters
     document.querySelector("div.extra-eq button.import-filters").addEventListener("click", () => {
         fileFiltersImport.click();
@@ -3338,29 +3357,26 @@ function addExtra() {
         return avgCurves(v);
     }
     // draw average of all active headphones
-    function drawAvgAll() {
-        let avgAllBtn = document.querySelector("button#avg-all");
+    let avgAllBtn = document.querySelector("button#avg-all");
 
-        avgAllBtn.addEventListener("click", function() {
-            let avgAll = getAvgAll();
-            let p = { name: "Average of All SPLs"};
-            let ch = [avgAll];
-            let phone = addOrUpdatePhone(brandMap.Uploaded, p, ch);
-            // if avg-all button not classed with selected class
-            if (!avgAllBtn.classList.contains("selected")) {
-                showPhone(phone, false);
-                // add selected class to avg-all button
-                avgAllBtn.classList.add("selected");
-            } else {
-                // remove selected class from avg-all button
-                avgAllBtn.classList.remove("selected");
-                // remove avg-all phone
-                removePhone(phone);
-            }
-            updatePaths(true);
-        });
-    }
-    drawAvgAll();
+    avgAllBtn.addEventListener("click", function() {
+        let avgAll = getAvgAll();
+        let p = { name: "Average of All SPLs"};
+        let ch = [avgAll];
+        let phone = addOrUpdatePhone(brandMap.Uploaded, p, ch);
+        // if avg-all button not classed with selected class
+        if (!avgAllBtn.classList.contains("selected")) {
+            showPhone(phone, false);
+            // add selected class to avg-all button
+            avgAllBtn.classList.add("selected");
+        } else {
+            // remove selected class from avg-all button
+            avgAllBtn.classList.remove("selected");
+            // remove avg-all phone
+            removePhone(phone);
+        }
+        updatePaths(true);
+    });
 }
 addExtra();
 
