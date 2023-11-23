@@ -2875,8 +2875,7 @@ function addExtra() {
         }
 
         let phoneEQ = { name: phoneObj.phone + " EQ Saved " + savedCounter };
-        let phoneObjEQ = addOrUpdatePhone(phoneObj.brand, phoneEQ,
-            phoneObj.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null));
+        let phoneObjEQ = addOrUpdatePhone(phoneObj.brand, phoneEQ, phoneObj.eq.rawChannels);
         phoneObjEQ.eqParent = phoneObj;
         showPhone(phoneObjEQ, false);
         savedCounter++;
