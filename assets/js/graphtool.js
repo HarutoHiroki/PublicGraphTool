@@ -1967,19 +1967,15 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
         // Tilt
         let tiltOct = new Array(bass.length).fill(null);
-        if (boost == 0) {
-            for(let i = 0; i < bass[0].length; i++) {
-                let gainAdjustment = tilt * Math.log2(bass[0][i][0]);
-                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
-                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
-            }
-        } else {
-            for(let i = 0; i < bass[0].length; i++) {
-                let gainAdjustment = 0;
+        for(let i = 0; i < bass[0].length; i++) {
+            let gainAdjustment = 0;
+            if (boost == 0) {
+                gainAdjustment = tilt * Math.log2(bass[0][i][0]);
+            } else {
                 if (bass[0][i][0] >= 200) gainAdjustment = tilt * Math.log2(bass[0][i][0]/200);
-                let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
-                tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
             }
+            let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
+            tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
         }
         // New Tilt
         let brand = window.brandTarget;
