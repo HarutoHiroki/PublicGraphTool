@@ -1925,10 +1925,10 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             doc.select("#cusdf-treb").node().value = treble;
         }
     });
-    
+
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
-    : showPhone(p,0,1, initMode));
-    
+                            : showPhone(p,0,1, initMode));
+
     // -------------------- Custom DF Tilt -------------------- //
     let customTiltName = default_DF_name;
     let tiltTHIS = doc.select("#cusdf-tiltTHIS");
