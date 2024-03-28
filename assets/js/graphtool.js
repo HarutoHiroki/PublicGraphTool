@@ -105,8 +105,8 @@ doc.html(`
             <input type="number" inputmode="decimal" id="cusdf-ear" value="`+ default_ear +`" step="0.1""></input>
             <span>Ear Gain (dB)</span>
           </div>
-          <button id="cusdf-10db" style="margin-right: 10px">10dB Tilt</button>
-          <button id="cusdf-tiltTHIS" style="margin-right: 10px">Tilt Current Target</button>
+          <button id="cusdf-UnTiltTHIS" style="margin-right: 10px">Remove Tilt</button>
+          <button id="cusdf-harmanfilters" style="margin-right: 10px">Harman Filters</button>
           <button id="cusdf-bounds">Preference Bounds</button>
         </div>
         <table class="manageTable">
@@ -320,7 +320,8 @@ let boost = default_bass_shelf;
 let tilt = default_tilt;
 let ear = default_ear;
 let treble = default_treble;
-let df, dfBase;
+let df, dfBase, customTiltName;
+let updateDF, prepPrefBounds;
 
 // Scales
 let x = d3.scaleLog()
@@ -611,7 +612,7 @@ function clearLabels() {
 
 function drawLabels() {
     let curves = d3.merge(
-        activePhones.filter(p=>!p.hide).map(p =>
+        activePhones.filter(p=>!p.hide && !p.isPrefBounds).map(p =>
             p.isTarget||!p.samp||p.avg ? p.activeCurves
             : LR.map((l,i) => ({
                 p:p, o:getO(i), id:getChannelName(p)(l), multi:true,
@@ -1175,7 +1176,7 @@ function setBaseline(b, no_transition) {
     baseline = b;
     updateYCenter();
     if (no_transition) return;
-    clearLabels();
+    //clearLabels();
     gpath.selectAll("path")
         .transition().duration(500).ease(d3.easeQuad)
         .attr("d", drawLine);
@@ -1226,7 +1227,7 @@ let baseURL;  // Set by setInitPhones
 function addPhonesToUrl() {
     let title = baseTitle,
         url = baseURL,
-        names = activePhones.filter(p => !p.isDynamic).map(p => p.fileName),
+        names = activePhones.filter(p => !p.isDynamic && !p.isPrefBounds).map(p => p.fileName),
         namesCombined = names.join(", ");
     
     if (names.length) {
@@ -1252,7 +1253,7 @@ function updatePaths(trigger) {
     let t = p.join("path").attr("opacity", c=>c.p.hide?0:null)
         .classed("sample", c=>c.p.samp)
         .attr("stroke", getColor_AC).call(redrawLine)
-        .filter(c=>c.p.isTarget)
+        .filter(c=>c.p.isTarget || c.p.isPrefBounds)
         .attr("class", "target");
     if (targetDashed) t.style("stroke-dasharray", "6, 3");
     if (targetColorCustom) t.attr("stroke", targetColorCustom);
@@ -1261,7 +1262,7 @@ function updatePaths(trigger) {
 }
 let colorBar = p=>'url(\'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 8"><path d="M0 8v-8h1c0.05 1.5,-0.3 3,-0.16 5s0.1 2,0.15 3z" fill="'+getBgColor(p)+'"/></svg>\')';
 function updatePhoneTable() {
-    let c = table.selectAll("tr").data(activePhones, p=>p.fileName);
+    let c = table.selectAll("tr").data(activePhones.filter(p => !p.isPrefBounds), p=>p.fileName);
     c.exit().remove();
     let f = c.enter().append("tr"),
         td = () => f.append("td");
@@ -1284,6 +1285,11 @@ function updatePhoneTable() {
         .attrs({type:"number",step:"any",value:0})
         .property("value", p=>p.offset)
         .on("change input",function(p){ setOffset(p, +this.value); });
+    let cSel = f.filter(p=>!p.isTarget).append("td").attr("class", "comp").append("select");
+    cSel.selectAll("option").data(["<no comp>", ...compTargets])
+        .enter().append("option").text(d=>d);
+    cSel.property("value", p=>p.comp);
+    cSel.on("change", function(p) { handleComp(p, this.value); });
     td().attr("class","button button-baseline")
         .html("<svg viewBox='-170 -120 340 240'><use xlink:href='#baseline-icon'></use></svg>")
         .on("click", p => setBaseline(p===baseline.p ? baseline0
@@ -1329,6 +1335,109 @@ function updatePhoneTable() {
                     d:"M265 110V25q0 -10 -10 -10H105q-24 0 -48 20l-24 20q-24 20 -2 40l18 15q24 20 42 20h100"
                 });
         });
+}
+
+function updateChannels(p, ch, comp) {
+    if (comp) { // if comp exists means we are compensating
+        // subtract the comp curve from the phone curve
+        for (let i=0; i<ch.length; i++) {
+            ch[i] = ch[i].map((d, j) => [d[0], d[1] - comp[Math.min(j, comp.length-1)]]);
+        }
+    }
+
+    p.channels = ch;
+    p.rawChannels = ch;
+    if (p.activeCurves.length > 1) {
+        for (let i=0; i<p.activeCurves.length; i++) {
+            p.activeCurves[i].l = ch[i];
+            p.activeCurves[i].p = p;
+        }
+    } else {
+        p.activeCurves[0].l = avgCurves(ch);
+    }
+    normalizePhone(p);
+    p.smooth = null;
+    smoothPhone(p);
+        
+    // update the graph
+    updatePaths();
+}
+
+function handleComp(p, opt) {
+    if (!p.preComp) p.preComp = p.rawChannels; // save the original channels
+    let ch = [...p.preComp]; // copy the original channels
+    if (opt !== "<no comp>") {
+        let compTarget = window.brandTarget.phoneObjs.find(p => p.dispName == opt);
+        p.comp = opt;
+        if (!compTarget.rawChannels) {
+            loadFiles(compTarget, function (tch) { // Haruto: fuck promises imma just slap down a "it works for now" solution
+                compTarget.rawChannels = tch;
+                let comp = compTarget.rawChannels[0].map(d => d[1]);
+            
+                updateChannels(p, ch, comp);
+            });
+        } else {
+            let comp = compTarget.rawChannels[0].map(d => d[1]);
+        
+            updateChannels(p, ch, comp);
+        }
+    } else {
+        p.comp = opt;
+        updateChannels(p, ch);
+    }
+}
+
+// Pref Bounds
+let prefBoundsObj; // Preference Bounds Phone object
+
+// load preference bounds files
+function loadPrefBounds(callback) {
+    let lpf = pf => d3.text(preference_bounds_dir+pf+".txt").catch(()=>null);
+    let f = LR.map(s =>lpf(preference_bounds_name+" "+s))
+    Promise.all(f).then(function (frs) {
+        if (!frs.some(f=>f!==null)) {
+            alert("Bounds not found!");
+        } else {
+            let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
+            ch = ch.filter(c => c !== null); // Remove null elements
+            callback(ch);
+        }
+    });
+}
+
+// create preference bounds phone object
+loadPrefBounds(function (ch) {
+    prefBoundsObj = { isPrefBounds:true, phone:"Preference Bounds",
+    fullName:"Preference Bounds", dispName:"Preference Bounds",
+    fileName:"Preference Bounds", rawChannels:ch, preComp:ch, id:-70 };
+    smoothPhone(prefBoundsObj);
+    normalizePhone(prefBoundsObj);
+    prefBoundsObj.offset=prefBoundsObj.offset||0;
+    let ap = activePhones.filter(p => !p.isTarget);
+    if (ap.length===1 && ap[0].activeCurves.length!==1) {
+        setCurves(ap[0], true);
+    }
+
+    if (preference_bounds_startup) {
+        doc.select("#cusdf-bounds").classed("selected", true);
+        activePhones.push(prefBoundsObj);
+        prefBoundsObj.active = true;
+        setCurves(prefBoundsObj, undefined, prefBoundsObj.lr);
+        updatePaths();
+    }
+});
+
+// multiply/add pref bounds by base target
+prepPrefBounds = () => {
+    let ch = [...prefBoundsObj.preComp]; // copy the original channels
+    let base = df.rawChannels[0].map(d => d[1]);
+    for (let i=0; i<ch.length; i++) {
+        ch[i] = ch[i].map((d, j) => [d[0], d[1] + base[Math.min(j, base.length-1)]]);
+    }
+    prefBoundsObj.rawChannels = prefBoundsObj.channels = prefBoundsObj.lr = ch;
+    normalizePhone(prefBoundsObj);
+    prefBoundsObj.smooth = null;
+    smoothPhone(prefBoundsObj);
 }
 
 function addKey(s) {
@@ -1384,7 +1493,7 @@ function addKey(s) {
             if (!p.hide && cs.length===2) {
                 d3.event.stopPropagation();
                 hl(p, h ? (c=>c===cs[pi[1]]) : true);
-                clearLabels();
+                // clearLabels(); why is this here this is stupid
                 gpath.selectAll("path").filter(c=>c.p===p).attr("opacity",h ? (c=>c!==cs[pi[1]]?0.7:null) : null);
             }
         })
@@ -1647,7 +1756,7 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
         }
     }
     let keep = !exclusive ? (q=>true)
-             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget);
+             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget || q.isPrefBounds);
     if (!p.rawChannels) {
         loadFiles(p, function (ch) {
             if (p.rawChannels) return;
@@ -1674,7 +1783,7 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     if (activePhones.indexOf(p)===-1 && (suppressVariant || !p.objs)) {
         let avg = false;
         if (!p.isTarget) {
-            let ap = activePhones.filter(p => !p.isTarget);
+            let ap = activePhones.filter(p => !p.isTarget && !p.isPrefBounds);
             avg = ap.length >= 1;
             if (ap.length===1 && ap[0].activeCurves.length!==1) {
                 setCurves(ap[0], true);
@@ -1685,6 +1794,18 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
         }
         p.active = true;
         setCurves(p, avg);
+    }
+    if (p.isTarget && tiltableTargets.includes(p.dispName)) { // Tilt the target
+        customTiltName = p.dispName;
+        if (p.dispName == "∆") customTiltName = "Delta (∆)";
+        df = p;
+        dfBase = getBaseline(df);
+        prepPrefBounds();
+        updateDF(boost, tilt, ear, treble);
+    } else if (p.isTarget && !tiltableTargets.includes(p.dispName) && p.phone != "Custom Tilt") {
+        customTiltName = p.dispName;
+        if (p.dispName == "∆") customTiltName = "Delta (∆)";
+        setBaseline(baseline0,1);
     }
     updatePaths(trigger);
     updatePhoneTable();
@@ -1812,19 +1933,19 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         if (url.includes(cDFb)) {
             boost = parseFloat(cTiltParams[1]);
         }
-        
+
         if (url.includes(cDFt)) {
             tilt = parseFloat(cTiltParams[2]);
         }
-        
+
         if (url.includes(cDFtr)) {
             treble = parseFloat(cTiltParams[3]);
         }
-        
+
         if (url.includes(cDFe)) {
             ear = parseFloat(cTiltParams[4]);
         }
-        
+
 
     }
     let isInit = initReq ? f => initReq.indexOf(f) !== -1
@@ -1912,52 +2033,39 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     }
 
     df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
+    if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
+        showPhone(df);
+        updateDispVals();
+    }
     loadFiles(df, function (ch) {
         df.rawChannels = ch;
-        showPhone(df, false);
+        smoothPhone(df);
+        normalizePhone(df);
+        df.offset=df.offset||0;
         dfBase = getBaseline(df);
-        removePhone(df);
-        if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
-            updateDF(boost, tilt, ear, treble);
-            doc.select("#cusdf-bass").node().value = boost;
-            doc.select("#cusdf-tilt").node().value = tilt;
-            doc.select("#cusdf-ear").node().value = ear;
-            doc.select("#cusdf-treb").node().value = treble;
-        }
     });
 
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
 
     // -------------------- Custom DF Tilt -------------------- //
-    let customTiltName = default_DF_name;
-    let tiltTHIS = doc.select("#cusdf-tiltTHIS");
-    // if tiltTHIS is clicked, switch df to current active target if exists
-    tiltTHIS.on("click", function () {
-        if (activePhones.length > 0) {
-            let activeTarget = activePhones.filter(p => p.isTarget)[0];
-            if (activeTarget) {
-                // if target name is not included in tiltableTargets array, warn user and return
-                if (!tiltableTargets.includes(activeTarget.dispName)) {
-                    alert("This target is not supported for custom tilt.");
-                    return;
-                }
-                // if target exists, switch df to first target
-                df = activeTarget;
-                customTiltName = activeTarget.dispName;
-                if (activeTarget.dispName == "∆") customTiltName = "Delta (∆)";
-                if (!df.rawChannels) {
-                    loadFiles(df, function (ch) {
-                        df.rawChannels = ch;
-                    });
-                }
-                dfBase = getBaseline(df);
-                updateDF(boost, tilt, ear, treble);
-            }
-        }
+    let UnTiltTHIS = doc.select("#cusdf-UnTiltTHIS");
+    // if UnTiltTHIS is clicked, switch df to current active target if exists
+    UnTiltTHIS.on("click", function () {
+        boost = 0;
+        tilt = 0;
+        ear = 0;
+        treble = 0;
+        updateDF(boost, tilt, ear, treble);
+        updateDispVals();
     });
     
-    function updateDF (boost, tilt, ear, treble, change) {
+    updateDF = (boost, tilt, ear, treble, change) => {
+        // check if user is trying to tilt non tiltable targets
+        let activeTarget = activePhones.filter(p => p.isTarget)[0];
+        if (activeTarget.isTarget && !tiltableTargets.includes(activeTarget.dispName) && activeTarget.phone != "Custom Tilt") {
+            return alert("This target is not supported for Custom Tilt");
+        }
         // Bass Shelf
         let filters = [
             {disabled: false, type:"LSQ", freq:105, q:0.7759, gain:boost},
@@ -1988,20 +2096,29 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         boost != 0 && (treble != 0 || ear != 0) ? fullDispName += ", " : null;
         treble != 0 ? fullDispName += "Treble: " + treble + "dB" : null;
         treble != 0 && ear != 0 ? fullDispName += ", " : null;
-        ear != 0 ? fullDispName += "Ear: " + ear + "dB" : null;
+        ear != 0 ? fullDispName += "3kHz: " + ear + "dB" : null;
         tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? fullDispName += ")" : null;
+
+        if (tilt == 0 && boost == 4.8 && treble == -4.4 && ear == 0) {
+            fullDispName += " (Harman 2013 Filters)"
+        } else if (tilt == 0 && boost == 6.6 && treble == -1.4 && ear == 0) {
+            fullDispName += " (Harman 2015 Filters)"
+        } else if (tilt == 0 && boost == 6.6 && treble == -1.4 && ear == -2) {
+            fullDispName += " (Harman 2018 Filters)"
+        }
+
         let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
-        fullName:fullDispName,
-        dispName:"Custom " + customTiltName + " Tilt",
+            fullName:fullDispName,
+            dispName:"Custom " + customTiltName + " Tilt",
             fileName:"Custom Tilt"};
         phoneObj.rawChannels = [tiltOct];
         phoneObj.id = -69;
         
         let oldPhoneObj = brand.phoneObjs.filter(p => p.phone == "Custom Tilt")[0]
         if (oldPhoneObj) {
-            // removePhone(oldPhoneObj);
             phoneObj.id = oldPhoneObj.id;
             phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
+            updatePhoneTable();
         } else {
             phoneObjs.push(phoneObj);
         }
@@ -2022,6 +2139,13 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         } else if (change === "treble") {
             doc.select("#cusdf-treb").node().focus();
         }
+    }
+
+    function updateDispVals() {
+        doc.select("#cusdf-bass").node().value = boost;
+        doc.select("#cusdf-tilt").node().value = tilt;
+        doc.select("#cusdf-ear").node().value = ear;
+        doc.select("#cusdf-treb").node().value = treble;
     }
 
     doc.select("#cusdf-bass").on("change input", function () {
@@ -2050,21 +2174,50 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         treble = +this.value;
         updateDF(boost, tilt, ear, treble, "treble");
     });
-
-    // Standard 10dB delta used by Crinacle and Headphones.com button
-    doc.select("#cusdf-10db").on("click", function () {
-        // zero bass boost
-        boost = 0;
-        // tilt -1dB/oct
-        tilt = -1;
+                            
+    // Harman Filters button
+    doc.select("#cusdf-harmanfilters").on("click", function () {
+        switch (this.classList[0]) {
+            case "harman2013":
+                this.classList.remove("harman2013");
+                this.classList.add("harman2015");
+                tilt = 0;
+                boost = 6.6;
+                treble = -1.4;
+                ear = 0;
+                break;
+            case "harman2015":
+                this.classList.remove("harman2015");
+                this.classList.add("harman2018");
+                tilt = 0;
+                boost = 6.6;
+                treble = -1.4;
+                ear = -2;
+                break;
+            case "harman2018":
+                this.classList.remove("harman2018");
+                this.classList.add("harman2013");
+                tilt = 0;
+                boost = 4.8;
+                treble = -4.4;
+                ear = 0;
+                break;
+            default:
+                this.className = "harman2018"
+                tilt = 0;
+                boost = 6.6;
+                treble = -1.4;
+                ear = -2;
+                break;
+        }
         updateDF(boost, tilt, ear, treble);
-        // update cusdf inputs
-        doc.select("#cusdf-bass").node().value = boost;
-        doc.select("#cusdf-tilt").node().value = tilt;
+        updateDispVals();
     });
 
-    // Preference Bounds button
-    doc.select("#cusdf-bounds").on("click", function () {
+    // Preference Bounds
+    
+    // button to toggle preference bounds
+    let boundsBtn = doc.select("#cusdf-bounds").on("click", function () {
         function toggleHide(p) {
             let h = p.hide;
             let t = table.selectAll("tr").filter(q=>q===p);
@@ -2079,19 +2232,30 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 drawLabels();
             }
         }
-        let boundsBtn = gr.select("[id=bounds]");
-        if (boundsBtn.attr("display") == "none") {
-            boundsBtn.attr("display", "block");
-            setBaseline(dfBase);
-            drawLabels();
-            // hide all targets
-            activePhones.filter(p => p.isTarget).forEach(p => toggleHide(p));
-        } else {
-            boundsBtn.attr("display", "none");
+
+        // set button class to selected
+        if (boundsBtn.classed("selected")) {
+            boundsBtn.classed("selected", false);
+            // remove preference bounds
+            removePhone(prefBoundsObj);
+
             // unhide all targets
             activePhones.filter(p => p.isTarget).forEach(p => toggleHide(p));
-        }
+        } else {
+            boundsBtn.classed("selected", true);
+            // set baseline
+            showPhone(df, true);
+            setBaseline(dfBase);
+            
+            // show preference bounds
+            activePhones.push(prefBoundsObj);
+            prefBoundsObj.active = true;
+            setCurves(prefBoundsObj, undefined, prefBoundsObj.lr);
+            updatePaths();
 
+            // hide all targets
+            activePhones.filter(p => p.isTarget).forEach(p => toggleHide(p));
+        }
     });
 
     function setBrand(b, exclusive) {
@@ -2684,7 +2848,6 @@ function addExtra() {
         }
         // if theres already an uploaded track, replace it
         if (uploadedAudio || uploadedSource) {
-            console.log(e.target.files[0]);
             uploadedAudio.pause();
             currentAudio.currentTime = 0;
 
@@ -2801,11 +2964,12 @@ function addExtra() {
         clearTimeout(applyEQHandle);
         applyEQHandle = setTimeout(applyEQExec, 100);
         updateFilters(elemToFilters());
+        document.dispatchEvent(new CustomEvent('UpdateExtensionFilters', { detail: { filters: elemToFilters() } }));
     };
     window.updateEQPhoneSelect = () => {
         let oldValue = eqPhoneSelect.value;
         let optionValues = activePhones.filter(p =>
-            !p.isTarget && !p.fullName.match(/ EQ$/)).map(p => p.fullName);
+            !p.isPrefBounds && !p.isTarget && !p.fullName.match(/ EQ$/)).map(p => p.fullName);
         Array.from(eqPhoneSelect.children).slice(1).forEach(c => eqPhoneSelect.removeChild(c));
         optionValues.forEach(value => {
             let optionElem = document.createElement("option");
@@ -3398,13 +3562,14 @@ function addHeader() {
     
     headerButton.className = "header-button";
     headerLogoElem.className = "logo";
+    headerLogoElem.setAttribute('style', "margin-right: 0;");
     headerLogoLink.setAttribute('href', site_url);
-    headerLogoLink.setAttribute('style', "display:inline; white-space:nowrap;");
+    headerLogoLink.setAttribute('style', "display:inline-flex; align-items:center; white-space:nowrap;");
     headerLogoSpan.innerText = headerLogoText;
-    headerLogoSpan.setAttribute('style', "position:absolute; color: #ffffff;");
+    headerLogoSpan.setAttribute('style', "color: #ffffff; margin-right:10px");
     headerLogoLink.append(headerLogoSpan);
     headerLogoImg.setAttribute("src", headerLogoImgUrl);
-    headerLogoImg.setAttribute('style', "width:95%; margin-left: 33%; fill: #ffffff;");
+    headerLogoImg.setAttribute('style', "width:auto; height: 24px; fill: #ffffff;");
     headerLogoLink.append(headerLogoImg);
     
     altHeaderElem.append(headerButton);
@@ -3430,6 +3595,13 @@ function addHeader() {
         linkContainerElem.append(linkElem);
         linksList.append(linkContainerElem);
     })
+
+    if (allowCreatorSupport) {
+        // custom Ko-fi button
+        const scriptHtml = `<a href='https://ko-fi.com/harutohiroki' target='_blank' style="margin-right: 10px"><img height='333' style='border:0px; height:33px;'
+                            src='https://storage.ko-fi.com/cdn/kofi5.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>`;
+        altHeaderElem.insertAdjacentHTML('beforeend', scriptHtml);
+    }
     
     headerButton.addEventListener("click", function() {
         let headerLinksState = altHeaderElem.getAttribute("data-links");

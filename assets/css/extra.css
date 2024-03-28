@@ -203,6 +203,12 @@ div.customDF>button:active {
   color: var(--font-color-secondary);
 }
 
+div.customDF>button.selected {
+  background-color: var(--accent-color)!important;
+  border-color: var(--accent-color);
+  color: var(--font-color-secondary)
+}
+
 /** extra panel **/
 
 div.extra-panel {
@@ -574,4 +580,74 @@ div.extra-panel div.filters-button > button[class="pink-noise selected"] {
 .volume-icon {
   color: var(--accent-color-contrast) !important;
   fill: var(--accent-color-contrast) !important;
+}
+
+/** separate target comp **/ 
+tbody.curves > tr > td.comp {
+  order: 3;
+  
+  padding: 0 0 0 13px;
+}
+
+tbody.curves > tr > td.comp select {
+  box-sizing: border-box;
+  width: 120px;
+  height: 36px;
+  padding: 8px 6px 8px 0px;
+  
+  background-color: var(--background-color-inputs);
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 6px;
+  outline: none;
+  
+  color: var(--font-color-inputs);
+  font-family: var(--font-secondary);
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+@media ( max-width: 1200px ) {
+  tbody.curves > tr > td.comp {
+    margin-left: auto;
+  }
+}
+
+@media ( max-width: 500px) {
+  tbody.curves > tr:before {
+    order: 5;
+    
+    content:'';
+    display: block;
+    flex: 100% 1 1;
+    
+    height: 0px;
+  }
+  
+  tbody.curves > tr > td.channels {
+    order: 3;
+  }
+  
+  tbody.curves > tr > td.levels {
+    order: 4;
+
+      margin-right: 0px !important;
+  } 
+
+  tbody.curves > tr > td.comp {
+    order: 4 !important;
+      
+    margin-right: 16px;
+  }
+  
+  tbody.curves > tr > td.button-baseline {
+    margin-left: auto;
+  }
+  
+  tbody.curves > tr > td.button-baseline,
+  tbody.curves > tr > td.hideIcon,
+  tbody.curves > tr > td.button-pin {
+    order: 5;
+  }   
 }

@@ -36,24 +36,26 @@ const init_phones = [],// Optional. Which graphs to display on initial load. Not
 
 // Specify which targets to display
 const targets = [
-    { type:"Reference", files:["Haruto", "Haruto 🅱️ass"] },
-    { type:"Neutral",    files:["Diffuse Field","Etymotic","Free Field","IEF Neutral"] },
-    { type:"Reviewer",   files:["Antdroid","Banbeucmas","HBB","Precogvision","Super Review 22","Super Review 21","Timmy","VSG"] },
-    { type:"IEF Members", files:["Brownie", "Brownie Unsmoothened", "Listener (No Bass Shelf)", "Rennsport"]},
+    { type:"Reference",  files:["Haruto 2024","Haruto 2021"] },
+    { type:"Neutral",    files:["KEMAR DF","IEF Neutral 2023","Etymotic"] },
+    { type:"Reviewer",   files:["Antdroid","Banbeucmas","HBB","Precogvision","Super Review 22","Timmy","VSG"] },
     { type:"Preference", files:["Harman IE 2019v2","Harman IE 2017v2","AutoEQ","Rtings","Sonarworks"] }
 ];
 
 // Haruto's Addons
-const  preference_bounds = "assets/images/bounds.png", // Preference bounds image
+const  preference_bounds_name = "Preference Bounds RAW", // Preference bounds name
+       preference_bounds_dir = "assets/pref_bounds/",    // Preference bounds directory
+       preference_bounds_startup = false,           // If true, preference bounds are displayed on startup
        PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
-       default_DF_name = "Diffuse Field",           // Default RAW DF name
+       default_DF_name = "KEMAR DF",                // Default RAW DF name
        dfBaseline = true,                           // If true, DF is used as baseline when custom df tilt is on
        default_bass_shelf = 8,                      // Default Custom DF bass shelf value
        default_tilt = -0.8,                         // Default Custom DF tilt value
        default_ear = 0,                             // Default Custom DF ear gain value
        default_treble = 0,                          // Default Custom DF treble gain value
-       tiltableTargets = ["Diffuse Field"];         // Targets that are allowed to be tilted
-
+       tiltableTargets = ["KEMAR DF"],              // Targets that are allowed to be tilted
+       compTargets = ["KEMAR DF"],                  // Targets that are allowed to be used for compensation
+       allowCreatorSupport = true;                  // Allow the creator to have a button top right to support them
 
 // *************************************************************
 // Functions to support config options set above; probably don't need to change these
@@ -76,11 +78,6 @@ function watermark(svg) {
         wm.append("text")
             .attrs({id:'wtext', x:0, y:80, "font-size":28, "text-anchor":"middle", "class":"graph-name"})
             .text(watermark_text);
-    }
-
-    if ( preference_bounds ) {
-        wm.append("image")
-        .attrs({id:'bounds',x:-385, y:-365, width:770, height:770, "xlink:href":preference_bounds, "display":"none"});
     }
 
     // Extra flair

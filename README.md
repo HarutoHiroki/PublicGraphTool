@@ -24,6 +24,10 @@
 - Added Treble customisation to custom tilt (requested by listener)
 - Added a button to swap between different y-axis scales (requested by rollo)
 - Added Preference Bounds and Preference Bound scaling (requested by listener)
+- Reversed the "any target tiltable" feature, now applying tilt on target automatically if supported (requested by listener)
+- Per-measurement compensation (requested by listener)
+- Added support for Haruto's Graph Extension to apply eq to browserwide 
+- Made Preference Bounds better and not relying on a png anymore
 
 
 # TODO
