@@ -40,7 +40,6 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
 // Specify which targets to display
 const targets = [
     { type:"Neutral",    files:["KEMAR DF", "IEF Neutral"] },
-    { type:"Community",   files:["Listener Tilt 711"] },
     { type:"Preference", files:["Harman Combined", "Harman 2018 OE", "Harman 2015 OE", "Harman 2013 OE"] }
 ];
 

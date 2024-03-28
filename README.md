@@ -1,3 +1,6 @@
+# Demo Page
+https://graphtool-demo.harutohiroki.com/
+
 # Changes
 - Added Equalizer (cred to Rohsa)
 - Added Uploads
