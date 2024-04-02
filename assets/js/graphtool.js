@@ -2947,7 +2947,7 @@ function addExtra() {
             }
         }
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected)[0];
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected)[0];
         if (!phoneObj || (!filters.length && !phoneObj.eq)) {
             return; // Allow empty filters if eq is applied before
         }
@@ -3027,7 +3027,7 @@ function addExtra() {
     document.querySelector("div.extra-eq button.save-filters").addEventListener("click", () => {
         let phoneSelected = eqPhoneSelect.value;
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
             alert("Please select model and add at least one filter before saving.");
@@ -3092,7 +3092,7 @@ function addExtra() {
     document.querySelector("div.extra-eq button.export-filters").addEventListener("click", () => {
         let phoneSelected = eqPhoneSelect.value;
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
             alert("Please select model and add at least one filter before exporting.");
@@ -3123,7 +3123,7 @@ function addExtra() {
     document.querySelector("div.extra-eq button.export-graphic-filters").addEventListener("click", () => {
         let phoneSelected = eqPhoneSelect.value;
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0] || { fullName: "Unnamed" };
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0] || { fullName: "Unnamed" };
         let filters = elemToFilters();
         if (!filters.length) {
             alert("Please add at least one filter before exporting.");
@@ -3169,7 +3169,7 @@ function addExtra() {
             }
         }
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected)[0];
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected)[0];
         let targetObj = (activePhones.filter(p => p.isTarget)[0] ||
             activePhones.filter(p => p !== phoneObj && !p.isTarget)[0]);
         if (!phoneObj || !targetObj) {
@@ -3203,7 +3203,7 @@ function addExtra() {
     function updatePreampDisplay() {
         let phoneSelected = eqPhoneSelect.value;
         let phoneObj = phoneSelected && activePhones.filter(
-            p => p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
+            p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let preamp = Equalizer.calc_preamp(
             phoneObj.rawChannels.filter(c => c)[0],
             phoneObj.eq.rawChannels.filter(c => c)[0]);
