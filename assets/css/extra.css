@@ -84,6 +84,57 @@ image.graph_logo {
     filter: var(--svg-filter);
 }
 
+/** Color Picker Thingy **/
+.colorStylePicker {
+  display: flex;
+  align-items: flex-start;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  flex-direction: row;
+  background-color: var(--background-color);
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 6px;
+  z-index: 1000;
+}
+
+.colorStylePicker .left-side {
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 0;
+}
+
+.colorStylePicker .right-side {
+  flex: 1;
+  align-items: center;
+}
+
+.colorStylePicker .right-side .row {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.colorStylePicker .right-side>div>span {
+  color: var(--font-color-inputs);
+  font-family: var(--font-primary);
+  font-size: 13.5px;
+  line-height: 1em;
+}
+
+.tickText {
+  order: 1 !important;
+}
+.tickInput {
+  order: 2 !important;
+  width: 55px !important;
+}
+.spaceText {
+  order: 3 !important;
+}
+.spaceInput {
+  order: 4 !important;
+  width: 55px !important;
+}
 
 /** Custom DF tilt**/
 
@@ -125,7 +176,8 @@ div.customDF>button+div {
   margin-left: 6px
 }
 
-div.customDF>div>input {
+div.customDF>div>input,
+.colorStylePicker input {
   order: 2;
   box-sizing: border-box;
   width: 70px;
@@ -146,7 +198,16 @@ div.customDF>div>input {
   padding-left: 11px
 }
 
-div.customDF>div:after {
+.colorStylePicker input {
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 6px;
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  height: 35.6px;
+}
+
+div.customDF>div:after{
   order: 3;
   content: '';
   box-sizing: border-box;
@@ -159,7 +220,8 @@ div.customDF>div:after {
   border-radius: 0 6px 6px 0
 }
 
-div.customDF>div>span {
+div.customDF>div>span,
+.colorStylePicker .right-side>.row>span {
   order: 1;
   padding: 11px 16px;
   background-color: var(--background-color)!important;
@@ -179,7 +241,8 @@ div.customDF>div.selected>span {
   color: var(--font-color-secondary)
 }
 
-div.customDF>button {
+div.customDF>button,
+.colorStylePicker button {
   padding: 11px 16px;
   
   background-color: var(--background-color) !important;
@@ -194,8 +257,14 @@ div.customDF>button {
   white-space: nowrap;
   cursor: pointer;
 }
+.colorStylePicker button {
+  order: 3;
+  margin-left: 7px;
+  height: 35.6px;
+}
 
-div.customDF>button:active {
+div.customDF>button:active,
+.colorStylePicker button:active {
   box-sizing: border-box;
   background-color: var(--accent-color) !important;
   border-color: var(--accent-color) !important;
@@ -203,10 +272,30 @@ div.customDF>button:active {
   color: var(--font-color-secondary);
 }
 
-div.customDF>button.selected {
+div.customDF>button.selected,
+.colorStylePicker button.selected {
   background-color: var(--accent-color)!important;
   border-color: var(--accent-color);
   color: var(--font-color-secondary)
+}
+
+.colorStylePicker select {
+  box-sizing: border-box;
+  width: 120px;
+  height: 36px;
+  padding: 8px 6px 8px 0px;
+  
+  background-color: var(--background-color-inputs);
+  border: 1px solid var(--background-color-contrast-more);
+  border-radius: 6px;
+  outline: none;
+  
+  color: var(--font-color-inputs);
+  font-family: var(--font-secondary);
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 /** extra panel **/
@@ -650,4 +739,70 @@ tbody.curves > tr > td.comp select {
   tbody.curves > tr > td.button-pin {
     order: 5;
   }   
+}
+
+tbody.curves > tr > td.remove {
+  order: 7 !important;
+}
+
+:root {
+  --icon-save: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M16 11h5l-9 10-9-10h5v-11h8v11zm1 11h-10v2h10v-2z'/%3E%3C/svg%3E");
+}
+
+tbody.curves > tr > td.button-saveSquig {
+  order: 6;
+}
+
+tbody.curves > tr > td.button.button-saveSquig {
+  mask: var(--icon-save);
+  -webkit-mask: var(--icon-save);
+  mask-size: 15px;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: 15px;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+tbody.curves > tr > td.button-saveSquig:before {
+  background-color: var(--background-color-contrast);
+  border-color: transparent;
+}
+
+tbody.curves > tr > td.button-saveSquig:after {
+  background-color: var(--font-color-primary) !important;
+}
+
+/** color and line weight / line dash style menu **/
+.line-style-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  display: inline-block;
+}
+
+.line-style-menu-content {
+  display: none;
+  position: absolute;
+  background-color: var(--background-color);
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.line-style-menu-content .style-button {
+  color: var(--font-color-primary);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+}
+
+.line-style-menu-content input[type="squig_color"] {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
 }

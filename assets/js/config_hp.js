@@ -35,7 +35,6 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       extraEQBandsMax = 20,                         // Max EQ bands available
       num_samples = 5,                              // Number of samples to average for smoothing
       scale_smoothing = 0.2;                        // Smoothing factor for scale transitions
-      
 
 // Specify which targets to display
 const targets = [
@@ -46,17 +45,19 @@ const targets = [
 // Haruto's Addons
 const  preference_bounds_name = "Preference Bounds RAW", // Preference bounds name
        preference_bounds_dir = "assets/pref_bounds/",    // Preference bounds directory
-       preference_bounds_startup = false,           // If true, preference bounds are displayed on startup
-       PHONE_BOOK = "phone_book_hp.json",           // Phone book file path & name
-       default_DF_name = "KEMAR DF",                // Default RAW DF name
-       dfBaseline = true,                           // If true, DF is used as baseline when custom df tilt is on
-       default_bass_shelf = 8,                      // Default Custom DF bass shelf value
-       default_tilt = -0.8,                         // Default Custom DF tilt value
-       default_ear = 0,                             // Default Custom DF ear gain value
-       default_treble = 0,                          // Default Custom DF treble gain value
-       tiltableTargets = ["KEMAR DF"],              // Targets that are allowed to be tilted
-       compTargets = ["KEMAR DF"],                  // Targets that are allowed to be used for compensation
-       allowCreatorSupport = true;                  // Allow the creator to have a button top right to support them
+       preference_bounds_startup = false,              // If true, preference bounds are displayed on startup
+       allowSquigDownload = false,                     // If true, allows download of measurement data
+       PHONE_BOOK = "phone_book_hp.json",              // Path to phone book JSON file
+       default_y_scale = "40db",                       // Default Y scale; values: ["20db", "30db", "40db", "50db", "crin"]
+       default_DF_name = "KEMAR DF",                   // Default RAW DF name
+       dfBaseline = true,                              // If true, DF is used as baseline when custom df tilt is on
+       default_bass_shelf = 8,                         // Default Custom DF bass shelf value
+       default_tilt = -0.8,                            // Default Custom DF tilt value
+       default_ear = 0,                                // Default Custom DF ear gain value
+       default_treble = 0,                             // Default Custom DF treble gain value
+       tiltableTargets = ["KEMAR DF"],                 // Targets that are allowed to be tilted
+       compTargets = ["KEMAR DF"],                     // Targets that are allowed to be used for compensation
+       allowCreatorSupport = true;                     // Allow the creator to have a button top right to support them
 
 
 
@@ -132,7 +133,7 @@ setLayout();
 const 
     // Short text, center-aligned, useful for a little side info, credits, links to measurement setup, etc. 
     simpleAbout = `
-        <p class="center">This web software is based on the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project. <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a> definition source.</p>
+        <p class="center">This graph database is maintained by HarutoHiroki with frequency responses generated via an "IEC60318-4"-compliant ear simulator. This web software is based on a heavily modified version of the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project, with <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a>'s definition source.</p>
     `,
     // Which of the above variables to actually insert into the page
     whichAccessoriesToUse = simpleAbout;
@@ -194,6 +195,10 @@ const linkSets = [
                 url: "https://crinacle.com/graphs/headphones/graphtool/"
             },
             {
+                name: "Listener",
+                url: "https://listener800.github.io/"
+            },
+            {
                 name: "Super* Review",
                 url: "https://squig.link/hp.html"
             }
@@ -236,7 +241,7 @@ let headerLogoText = "HarutoHiroki",
     },
     {
         name: "Donate",
-        url: "https://www.paypal.me/harutohirokiUS"
+        url: "https://ko-fi.com/harutohiroki"
     },
 //  {
 //      name: "GitHub",

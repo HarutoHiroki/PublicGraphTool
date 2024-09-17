@@ -17,6 +17,9 @@ doc.html(`
           PIN
         </text>
       </g>
+      <g id="save-icon">
+        <path d='M16 11h5l-9 10-9-10h5v-11h8v11zm1 11h-10v2h10v-2z'/>
+      </g>
     </defs>
   </svg>
 
@@ -88,7 +91,7 @@ doc.html(`
 
       <div class="manage">
         <div class="customDF">
-          <span>Custom Delta Tilt:</span>
+          <span>Preference Adjustments:</span>
           <div>
             <input type="number" inputmode="decimal" id="cusdf-tilt" value="`+ default_tilt +`" step="0.1""></input>
             <span>Tilt (dB/Oct)</span>
@@ -105,7 +108,7 @@ doc.html(`
             <input type="number" inputmode="decimal" id="cusdf-ear" value="`+ default_ear +`" step="0.1""></input>
             <span>Ear Gain (dB)</span>
           </div>
-          <button id="cusdf-UnTiltTHIS" style="margin-right: 10px">Remove Tilt</button>
+          <button id="cusdf-UnTiltTHIS" style="margin-right: 10px">Remove Adjustments</button>
           <button id="cusdf-harmanfilters" style="margin-right: 10px">Harman Filters</button>
           <button id="cusdf-bounds">Preference Bounds</button>
         </div>
@@ -320,8 +323,8 @@ let boost = default_bass_shelf;
 let tilt = default_tilt;
 let ear = default_ear;
 let treble = default_treble;
-let df, dfBase, customTiltName;
-let updateDF, prepPrefBounds;
+let df, dfBase, updateDF, prepPrefBounds;
+let customTiltName = default_DF_name;
 
 // Scales
 let x = d3.scaleLog()
@@ -554,46 +557,56 @@ function updateBoundsScaling(h) {
 updateBoundsScaling(dB.H);
 
 doc.select("#yscalebtn").on("click", function() {
-    // 3 way button, class="crin" is the default, class="40db" is the 40dB scale, class="50db" is the 50dB scale
-    // 5 way now cuz listener said so
-    switch (this.classList[0]) {
+    changeScaling(this.classList[0]);
+});
+
+function changeScaling(y_scale) {
+    let button = document.querySelector("#yscalebtn");
+    switch (y_scale) {
         case "20db":
-            this.classList.remove("20db");
-            this.classList.add("30db");
-            this.innerHTML = "30dB";
+            button.className = "30db";
+            button.innerHTML = "30dB";
             updateYScaling(101.33, 172);
             break;
         case "30db":
-            this.classList.remove("30db");
-            this.classList.add("40db");
-            this.innerHTML = "40dB";
+            button.className = "40db";
+            button.innerHTML = "40dB";
             updateYScaling(dB.H, defY);
             break;
         case "40db":
-            this.classList.remove("40db");
-            this.classList.add("50db");
-            this.innerHTML = "50dB";
+            button.className = "50db";
+            button.innerHTML = "50dB";
             updateYScaling(60.79, 172);
             break;
         case "50db":
-            this.classList.remove("50db");
-            this.classList.add("crin");
-            this.innerHTML = "Crin";
+            //button.classList.remove("50db");
+            button.className = "crin";
+            button.innerHTML = "Crin";
             updateYScaling(54.77, 156.94);
             break;
         case "crin":
-            this.classList.remove("crin");
-            this.classList.add("20db");
-            this.innerHTML = "20dB";
+            //button.classList.remove("crin");
+            button.className = "20db";
+            button.innerHTML = "20dB";
             updateYScaling(152, 172);
             break;
         default:
-            this.className = "40db";
-            this.innerHTML = "40dB";
+            button.className = "40db";
+            button.innerHTML = "40dB";
             updateYScaling(dB.H, defY);
             break;
     }
-});
+}
+
+// check if user defined a default y scale
+function checkUserDefaultScale() {
+    let validScales = ["20db", "30db", "40db", "50db", "crin"];
+    if (default_y_scale && validScales.includes(default_y_scale)) {
+        let fauxIndex = validScales.indexOf(default_y_scale);
+        let trueIndex = fauxIndex === 0 ? validScales.length - 1 : fauxIndex - 1;
+        changeScaling(validScales[trueIndex]);
+    }
+}
 
 
 // Label drawing and screenshot
@@ -750,12 +763,8 @@ function saveGraph(ext) {
     gpath.selectAll("path").classed("highlight",false);
     drawLabels();
     showControls(false);
-    gr.select("[id=background]").attrs({"display":"none"}); 
     fn(gr.node(), "graph."+ext, {scale:3})
-        .then(()=>{
-            showControls(true)
-            gr.select("[id=background]").attrs({"display":null});
-        });
+        .then(()=>showControls(true));
     
     // Analytics event
     if (analyticsEnabled) { pushEventTag("clicked_download", targetWindow); }
@@ -1013,7 +1022,7 @@ let baseline0 = { p:null, l:null, fn:l=>l },
 
 let gpath = gr.insert("g",".dBScaler")
     .attr("fill","none")
-    .attr("stroke-width",2.3)
+    .attr("stroke-width",2.1)
     .attr("mask","url(#graphFade)");
 function hl(p, h) {
     gpath.selectAll("path").filter(c=>c.p===p).classed("highlight",h);
@@ -1021,24 +1030,31 @@ function hl(p, h) {
 let table = doc.select(".curves");
 
 let ld_p1 = 1.1673039782614187;
-function getCurveColor(id, o) {
+function getCurveColor(id, o, hex) {
     let p1 = ld_p1,
         p2 = p1*p1,
         p3 = p2*p1;
     let t = o/32;
     let i=id/p3+0.76, j=id/p2+0.79, k=id/p1+0.32;
-    if (id < 0) { return d3.hcl(360*(1-(-i)%1),5,66); } // Target
-    let th = 2*Math.PI*i;
-    i += Math.cos(th-0.3)/24 + Math.cos(6*th)/32;
-    let s = Math.sin(2*Math.PI*i);
-    return d3.hcl(360*((i + t/p2)%1) + (o * 30), // hue varies with "o"
-                  88+30*(j%1 + 1.3*s - t/p3),
-                  55); //constant luminance
+    if (hex) {
+        let rgb = d3.rgb(hex);
+        let hcl = d3.hcl(rgb);
+        hcl.h = hcl.h + -30 * (o <= 0 ? 0 : 1); // Haruto's Bias, if you want to make the color more dicernable, change the 30 to 60, for the original, change the entire thing to 30 * o
+        return hcl;
+    } else {
+        if (id < 0) { return d3.hcl(360*(1-(-i)%1),5,66); } // Target
+        let th = 2*Math.PI*i;
+        i += Math.cos(th-0.3)/24 + Math.cos(6*th)/32;
+        let s = Math.sin(2*Math.PI*i);
+        return d3.hcl(360*((i + t/p2)%1) + (o * 30), // hue varies with "o"
+                      88+30*(j%1 + 1.3*s - t/p3),
+                      64); //constant luminance
+    }
 }
-let getColor_AC = c => getCurveColor(c.p.id, c.o);
-let getColor_ph = (p,i) => getCurveColor(p.id, p.activeCurves[i].o);
-function getDivColor(id, active) {
-    let c = getCurveColor(id,0);
+let getColor_AC = c => getCurveColor(c.p.id, c.o, c.p.hexColor);
+let getColor_ph = (p,i) => getCurveColor(p.id, p.activeCurves[i].o, p.hexColor);
+function getDivColor(id, active, hex) {
+    let c = getCurveColor(id, 0, hex);
     c.l = 100-(80-Math.min(c.l,60))/(active?1.5:3);
     c.c = (c.c-20)/(active?3:4);
     return c;
@@ -1051,9 +1067,9 @@ function color_curveToText(c) {
     return c;
 }
 let getTooltipColor = curve => color_curveToText(getColor_AC(curve));
-let getTextColor = p => color_curveToText(getCurveColor(p.id,0));
+let getTextColor = p => color_curveToText(getCurveColor(p.id,0,p.hexColor));
 let getBgColor = p => {
-    let c=getCurveColor(p.id,0).rgb();
+    let c=getCurveColor(p.id,0,p.hexColor).rgb();
     ['r','g','b'].forEach(p=>c[p]=255-(255-Math.max(0,c[p]))*0.85);
     return c;
 }
@@ -1095,8 +1111,8 @@ function setPhoneTr(phtr) {
             p.highlight = true;
         }
     });
-    phtr.style("background",p=>p.isTarget&&!p.active?null:getDivColor(p.id,p.highlight))
-        .style("border-color",p=>p.highlight?getDivColor(p.id,1):null);
+    phtr.style("background",p=>p.isTarget&&!p.active?null:getDivColor(p.id,p.highlight,p.hexColor))
+        .style("border-color",p=>p.highlight?getDivColor(p.id,1,p.hexColor):null);
     phtr.filter(p=>!p.isTarget)
         .select(".phone-item-add")
         .selectAll(".remove").data(p=>p.highlight?[p]:[])
@@ -1250,13 +1266,26 @@ function updatePaths(trigger) {
     clearLabels();
     let c = d3.merge(activePhones.map(p => p.activeCurves)),
         p = gpath.selectAll("path").data(c, d=>d.id);
-    let t = p.join("path").attr("opacity", c=>c.p.hide?0:null)
-        .classed("sample", c=>c.p.samp)
-        .attr("stroke", getColor_AC).call(redrawLine)
-        .filter(c=>c.p.isTarget || c.p.isPrefBounds)
-        .attr("class", "target");
-    if (targetDashed) t.style("stroke-dasharray", "6, 3");
+    let graphLines = p.join("path").attr("opacity", c=>c.p.hide?0:null)
+        .classed("sample", c=>c.p.samp);
+    graphLines.attr("stroke", getColor_AC).call(redrawLine);
+    let t = graphLines.filter(c=>c.p.isTarget)
+        .attr("class", "target")
+        .style("stroke-dasharray", "6, 3");
+    let pfb = graphLines.filter(c=>c.p.isPrefBounds)
+        .style("stroke-dasharray", "6, 3");
+
     if (targetColorCustom) t.attr("stroke", targetColorCustom);
+    let nodes = graphLines.nodes();
+    for (let i = 0; i < nodes.length; i++) {
+        let g = nodes[i].__data__;
+        if (g.p.lineWeight) {
+            d3.select(nodes[i]).style("stroke-width", g.p.lineWeight);
+        }
+        if (g.p.dashStyle) {
+            d3.select(nodes[i]).style("stroke-dasharray", g.p.dashStyle);
+        }
+    }
     if (ifURL && !trigger) addPhonesToUrl();
     if (stickyLabels) drawLabels();
 }
@@ -1267,19 +1296,19 @@ function updatePhoneTable() {
     let f = c.enter().append("tr"),
         td = () => f.append("td");
     f   .call(setHover, h => p => hl(p,h))
-        .style("color", p => getDivColor(p.id,true));
+        .style("color", p => getDivColor(p.id,true,p.hexColor));
 
     td().attr("class","remove").text("⊗")
         .on("click", removePhone)
         .style("background-image",colorBar)
-        .filter(p=>!p.isTarget).append("svg").call(addColorPicker);
+        .append("svg").call(addColorPicker); // .filter(p=>!p.isTarget) if you want to exclude target from color picker
     td().attr("class","item-line item-target")
         .call(s=>s.filter(p=>!p.isTarget).attr("class","item-line item-phone")
                   .append("span").attr("class","brand").text(p=>p.dispBrand))
         .call(addModel);
     td().attr("class","curve-color").append("button")
-        .style("background-color",p=>getCurveColor(p.id,0))
-        .filter(p=>!p.isTarget).call(makeColorPicker);
+        .style("background-color",p=>getCurveColor(p.id,0,p.hexColor))
+        .call(makeColorPicker); // .filter(p=>!p.isTarget) if you want to exclude target from color picker
     td().attr("class","channels").append("svg").call(addKey)
     td().attr("class","levels").append("input")
         .attrs({type:"number",step:"any",value:0})
@@ -1335,6 +1364,50 @@ function updatePhoneTable() {
                     d:"M265 110V25q0 -10 -10 -10H105q-24 0 -48 20l-24 20q-24 20 -2 40l18 15q24 20 42 20h100"
                 });
         });
+    if (allowSquigDownload) {
+        function saveSquiggle(p) {
+            let channels = p.activeCurves.map(c => c.l);
+            let LR = p.activeCurves.map(c => c.id.match(/(?<=\().(?=\))/)? c.id.match(/(?<=\().(?=\))/)[0] : "Target");
+            
+            let squig = document.createElement("a");
+            squig.style.display = 'none';
+            document.body.appendChild(squig);
+
+            // this code is if you want to download the average curve if multiple channels are visible
+            if (channels.length > 1) {
+                let squigName = p.fullName + " AVG";
+                p.comp ? squigName += " - Comp: " + p.comp : null;
+                let filename = squigName + ".txt";
+                let data = avgCurves(channels).map(d => d.join("\t")).join("\n");
+                let blob = new Blob([data], {type: "text/plain; charset=utf-8"});
+                let url = URL.createObjectURL(blob);
+
+                squig.href = url;
+                squig.download = filename;
+                squig.click();
+                URL.revokeObjectURL(url);
+            } else {
+                let squigName = p.fullName + " " + LR[0];
+                p.comp ? squigName += " - " + p.comp : null;
+                let filename = squigName + ".txt";
+                let data = channels[0].map(d => d.join("\t")).join("\n");
+                let blob = new Blob([data], {type: "text/plain; charset=utf-8"});
+                let url = URL.createObjectURL(blob);
+
+                squig.href = url;
+                squig.download = filename;
+                squig.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // cleanup
+            document.body.removeChild(squig);
+        }
+
+        td().attr("class","button button-saveSquig")
+            .html("<svg viewBox='0 0 24 24'><use xlink:href='#save-icon'></svg>")
+            .on("click", saveSquiggle);
+    }
 }
 
 function updateChannels(p, ch, comp) {
@@ -1447,7 +1520,7 @@ function addKey(s) {
     defs.append("linearGradient").attr("id", p=>"chgrad"+p.id)
         .attrs({x1:0,y1:0, x2:0,y2:1})
         .selectAll().data(p=>[0.1,0.4,0.6,0.9].map(o =>
-            [o, getCurveColor(p.id, o<0.3?-1:o<0.7?0:1)]
+            [o, getCurveColor(p.id, o<0.3?-1:o<0.7?0:1,p.hexColor)]
         )).join("stop")
         .attr("offset",i=>i[0])
         .attr("stop-color",i=>i[1]);
@@ -1460,7 +1533,7 @@ function addKey(s) {
     m.append("rect").attrs({"class":"keyMask", x:p=>channelbox_x(p.avg), y:-12, width:120, height:24, fill:"url(#blgrad)"});
     let t = s.append("g");
     t.append("path")
-        .attr("stroke", p => notMultichannel(p) ? getCurveColor(p.id,0)
+        .attr("stroke", p => notMultichannel(p) ? getCurveColor(p.id,0,p.hexColor)
                                                 : "url(#chgrad"+p.id+")");
     t.selectAll().data(p=>p.isTarget?[]:LR)
         .join("text").attr("class","keyCLabel")
@@ -1470,7 +1543,7 @@ function addKey(s) {
     t.filter(p=>p.isTarget).append("text")
         .attrs(keyExt?{x:7,y:6,"text-anchor":"middle"}
                      :{x:17,y:0,"text-anchor":"start"})
-        .attrs({dy:"0.32em", "font-size":8, fill:p=>getCurveColor(p.id,0)})
+        .attrs({dy:"0.32em", "font-size":8, fill:p=>getCurveColor(p.id,0,p.hexColor)})
         .text("Target");
     let uchl = f => function (p) {
         updateCurves(p, f(p)); hl(p,true);
@@ -1646,22 +1719,154 @@ function addColorPicker(svg) {
     svg.call(cpCircles);
     makeColorPicker(svg);
 }
+function hclToHex(hcl) {
+    return d3.hcl(hcl).formatHex();
+}
+function createPopupMenu(p, x, y) {
+    // Remove any existing popup
+    d3.select(".colorStylePicker").remove();
+
+    // Create the popup menu
+    let popup = d3.select("body").append("div")
+        .attr("class", "colorStylePicker")
+        .style("position", "absolute")
+        .style("left", `${x}px`)
+        .style("top", `${y}px`)
+        .style("padding", "10px")
+
+    
+    // Add a color wheel to the left side
+    let colorWheelElement = popup.append("div").attr("class", "left-side").node();
+    let colorWheel = new ReinventedColorWheel({
+        appendTo: colorWheelElement,
+        wheelDiameter: 150,
+        wheelThickness: 10,
+        handleDiameter: 16,
+        wheelReflectsSaturation: true,
+        hex: p.hexColor ? p.hexColor : hclToHex(getCurveColor(p.id,0)),
+        onChange: function(color) {
+            p.hexColor = color.hex;
+            input.node().value = color.hex;
+            colorPhones();
+        }
+    })
+
+    // Add a right side menu
+    let menuRightSide = popup.append("div").attr("class", "right-side");
+    
+    // lmao why button when can div
+    menuRightSide.append("div")
+    .style("margin-bottom", "3px")
+    .style("display", "flex")
+    .style("flex-direction", "column")
+    .style("align-items", "flex-end")
+    .append("span").text("X").style("cursor", "pointer").on("click", function() {popup.remove();});
+
+    // Add input row for hex code
+    menuRightSide.append("div").style("margin-bottom", "3px").append("span").text("Custom Graph Color").style("margin-right", "108px");
+    let hexMenu = menuRightSide.append("div").attr("class", "row");
+    hexMenu.append("span").text("Hex Color");
+    let input = hexMenu.append("input")
+        .attr("type", "text")
+        .attr("value", p.hexColor ? p.hexColor : hclToHex(getCurveColor(p.id,0)))
+        .on("input", function() {
+            if (!this.value.startsWith("#")) {
+                this.value = "#" + this.value.replace(/#/g, "");
+            }
+            if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorWheel.hex = this.value;
+            }
+        });
+
+    // Add a button to apply random colors
+    hexMenu.append("button").text("Random").on("click", function() {
+        p.id = getPhoneNumber();
+        // colorPhones();
+        colorWheel.hex = hclToHex(getCurveColor(p.id,0));
+        // change the hex color input value
+        // input.node().value = p.hexColor ? p.hexColor : hclToHex(getCurveColor(p.id,0));
+    });
+
+    // Add a 2nd row for dash-style buttons
+    menuRightSide.append("div").style("margin", "10px 0 3px 0").append("span").text("Custom Graph Dash-Style");
+    let styleMenu = menuRightSide.append("div").attr("class", "row");
+
+    let tick, space;
+    function getDashStyle() {
+        if (!p.dashStyle) {
+            if (p.isTarget) {
+                tick = 6;
+                space = 3;
+            } else if (p.isPrefBounds) {
+                tick = 6;
+                space = 3;
+            } else {
+                tick = 1;
+                space = 0;
+            }
+        } else {
+            let dash = p.dashStyle.split(", ");
+            tick = dash[0];
+            space = dash[1];
+        }
+    }
+    function resolveDashStyle() {
+        p.dashStyle = tick + ", " + space;
+        updatePaths();
+    }
+    getDashStyle();
+
+    styleMenu.append("span").text("Tick").attr("class", "tickText");
+    styleMenu.append("input")
+        .attr("class", "tickInput")
+        .attr("type", "number")
+        .attr("value", tick)
+        .attr("min", 1)
+        .on("input", function() {
+            tick = this.value;
+            resolveDashStyle();
+        });
+    styleMenu.append("span").text("Space").style("margin-left", "11px").attr("class", "spaceText");
+    styleMenu.append("input")
+        .attr("class", "spaceInput")
+        .attr("type", "number")
+        .attr("value", space)
+        .attr("min", 0)
+        .on("input", function() {
+            space = this.value;
+            resolveDashStyle();
+        });
+    
+    // Add an event listener to close the popup when clicking outside of it
+    document.addEventListener("click", function(event) {
+        if (!popup.node().contains(event.target)) {
+            popup.remove();
+            document.removeEventListener("click", arguments.callee);
+        }
+    });
+}
 function makeColorPicker(elt) {
     elt.on("click", function (p) {
-        p.id = getPhoneNumber();
-        colorPhones();
+        // Get the bounding box of the clicked element
+        let bbox = this.getBoundingClientRect();
+        
+        // Calculate the position for the popup menu
+        let x = bbox.left + window.scrollX + 20;
+        let y = bbox.top + window.scrollY - 150;
+
+        createPopupMenu(p, x, y);
         d3.event.stopPropagation();
     });
 }
 
 function colorPhones() {
     updatePaths();
-    let c = p=>p.active?getDivColor(p.id,true):null;
+    let c = p=>p.active?getDivColor(p.id,true,p.hexColor):null;
     doc.select("#phones").selectAll("div")
         .style("background",c).style("border-color",c);
     let t = table.selectAll("tr").filter(p=>!p.isTarget)
         .style("color", c);
-    t.select("button").style("background-color",p=>getCurveColor(p.id,0));
+    t.select("button").style("background-color",p=>getCurveColor(p.id,0,p.hexColor));
     t= t.call(s => s.select(".remove").style("background-image",colorBar)
                     .select("svg").call(cpCircles))
         .select("td.channels"); // Key line
@@ -1755,8 +1960,9 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
             setAddButton(false);
         }
     }
+    let PB = p => p.isPrefBounds ? p.isPrefBounds : false;
     let keep = !exclusive ? (q=>true)
-             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget || q.isPrefBounds);
+             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget || PB(q));
     if (!p.rawChannels) {
         loadFiles(p, function (ch) {
             if (p.rawChannels) return;
@@ -1994,8 +2200,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 let phoneDiv = enter.append("div")
                     .attr("class","phone-item")
                     .attr("name", p=>p.fullName)
-                    .on("mouseover", bg(true, p => getDivColor(p.id===undefined?nextPhoneNumber():p.id, true)))
-                    .on("mouseout" , bg(false,p => p.id!==undefined?getDivColor(p.id,p.active):null))
+                    .on("mouseover", bg(true, p => getDivColor(p.id===undefined?nextPhoneNumber():p.id, true,p.hexColor)))
+                    .on("mouseout" , bg(false,p => p.id!==undefined?getDivColor(p.id,p.active,p.hexColor):null))
                     .call(setClicks(showPhone));
                 phoneDiv.append("span").text(p=>p.fullName);
                 // Adding the + selection button
@@ -2048,6 +2254,9 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
 
+    // update y scaling
+    checkUserDefaultScale();
+
     // -------------------- Custom DF Tilt -------------------- //
     let UnTiltTHIS = doc.select("#cusdf-UnTiltTHIS");
     // if UnTiltTHIS is clicked, switch df to current active target if exists
@@ -2068,9 +2277,9 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         }
         // Bass Shelf
         let filters = [
-            {disabled: false, type:"LSQ", freq:105, q:0.7759, gain:boost},
-            {disabled: false, type:"PK", freq:2800, q:1.8, gain:ear},
-            {disabled: false, type:"HSQ", freq:2500, q:0.3913, gain:treble}
+            {disabled: false, type:"LSQ", freq:105, q:0.707, gain:boost},
+            {disabled: false, type:"PK", freq:2750, q:1, gain:ear},
+            {disabled: false, type:"HSQ", freq:2500, q:0.42, gain:treble}
         ]; 
         let bass = df.rawChannels.map(c => c ? Equalizer.apply(c, filters) : null);
         // Tilt
@@ -2080,7 +2289,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             if (boost == 0) {
                 gainAdjustment = tilt * Math.log2(bass[0][i][0]);
             } else {
-                if (bass[0][i][0] >= 200) gainAdjustment = tilt * Math.log2(bass[0][i][0]/200);
+                // if (bass[0][i][0] >= 200) gainAdjustment = tilt * Math.log2(bass[0][i][0]/200); // stopping tilt at 200hz for bass boost
+                gainAdjustment = tilt * Math.log2(bass[0][i][0]);
             }
             let tiltedMagnitude = bass[0][i][1] + gainAdjustment;
             tiltOct[i] = [bass[0][i][0], tiltedMagnitude];
@@ -2088,36 +2298,39 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         // New Tilt
         let brand = window.brandTarget;
         let phoneObjs = brand.phoneObjs;
-        let fullDispName = customTiltName;
-        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? fullDispName += " (" : null;
-        tilt != 0 ? fullDispName += "Tilt: " + tilt + "dB/Oct" : null;
-        tilt != 0 && (boost != 0 || treble !=0 || ear != 0) ? fullDispName += ", " : null;
-        boost != 0 ? fullDispName += "Bass: " + boost + "dB" : null;
-        boost != 0 && (treble != 0 || ear != 0) ? fullDispName += ", " : null;
-        treble != 0 ? fullDispName += "Treble: " + treble + "dB" : null;
-        treble != 0 && ear != 0 ? fullDispName += ", " : null;
-        ear != 0 ? fullDispName += "3kHz: " + ear + "dB" : null;
-        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? fullDispName += ")" : null;
+        let preferenceAdjustments = " ";
+        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? preferenceAdjustments += "(" : null;
+        tilt != 0 ? preferenceAdjustments += "Tilt: " + tilt + "dB/Oct" : null;
+        tilt != 0 && (boost != 0 || treble !=0 || ear != 0) ? preferenceAdjustments += ", " : null;
+        boost != 0 ? preferenceAdjustments += "Bass: " + boost + "dB" : null;
+        boost != 0 && (treble != 0 || ear != 0) ? preferenceAdjustments += ", " : null;
+        treble != 0 ? preferenceAdjustments += "Treble: " + treble + "dB" : null;
+        treble != 0 && ear != 0 ? preferenceAdjustments += ", " : null;
+        ear != 0 ? preferenceAdjustments += "3kHz: " + ear + "dB" : null;
+        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? preferenceAdjustments += ")" : null;
 
         if (tilt == 0 && boost == 4.8 && treble == -4.4 && ear == 0) {
-            fullDispName += " (Harman 2013 Filters)"
+            preferenceAdjustments += " (Harman 2013 Filters)"
         } else if (tilt == 0 && boost == 6.6 && treble == -1.4 && ear == 0) {
-            fullDispName += " (Harman 2015 Filters)"
-        } else if (tilt == 0 && boost == 6.6 && treble == -1.4 && ear == -2) {
-            fullDispName += " (Harman 2018 Filters)"
+            preferenceAdjustments += " (Harman 2015 Filters)"
+        } else if (tilt == 0 && boost == 6.6 && treble == -3 && ear == -1.8) {
+            preferenceAdjustments += " (Harman 2018 Filters)"
         }
 
         let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
-            fullName:fullDispName,
-            dispName:"Custom " + customTiltName + " Tilt",
+            fullName:customTiltName + preferenceAdjustments,
+            dispName:customTiltName + preferenceAdjustments,
             fileName:"Custom Tilt"};
         phoneObj.rawChannels = [tiltOct];
         phoneObj.id = -69;
         
-        let oldPhoneObj = brand.phoneObjs.filter(p => p.phone == "Custom Tilt")[0]
+        let oldPhoneObj = phoneObjs.filter(p => p.phone == "Custom Tilt")[0];
         if (oldPhoneObj) {
+            // oldPhoneObj.active && removePhone(oldPhoneObj);
             phoneObj.id = oldPhoneObj.id;
             phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
+            oldPhoneObj.active = false; // worse, but more aesthetic
+            activePhones = activePhones.filter(p => p.active);
             updatePhoneTable();
         } else {
             phoneObjs.push(phoneObj);
@@ -2191,8 +2404,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 this.classList.add("harman2018");
                 tilt = 0;
                 boost = 6.6;
-                treble = -1.4;
-                ear = -2;
+                treble = -3;
+                ear = -1.8;
                 break;
             case "harman2018":
                 this.classList.remove("harman2018");
@@ -2206,8 +2419,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
                 this.className = "harman2018"
                 tilt = 0;
                 boost = 6.6;
-                treble = -1.4;
-                ear = -2;
+                treble = -3;
+                ear = -1.8;
                 break;
         }
         updateDF(boost, tilt, ear, treble);
@@ -3347,7 +3560,7 @@ function addExtra() {
             nodes[nodes.length - 1].connect(merger, 0, 1); // Connect to the right channel
             nodes.push(merger);
         }
-
+        
         filters.forEach(filterInfo => {
             const filter = audioContext.createBiquadFilter();
             let type;
@@ -3369,7 +3582,7 @@ function addExtra() {
         
         nodes[nodes.length - 1].connect(channelSplitter);
     }
-    
+
     // load pink noise audio file
     document.addEventListener("DOMContentLoaded", () => {
         pinkNoiseAudio = document.getElementById("pinkNoiseAudio");
@@ -3381,7 +3594,7 @@ function addExtra() {
 
         // apply filters
         applyFilters(audioContext, currentSource, elemToFilters());
-        
+
         // track swapping
         let pinkNoisePlayButton = document.getElementById("play-button");
         let eqDemo = document.querySelector("div.eq-demo");
@@ -3512,7 +3725,8 @@ function addExtra() {
 
     // get average of all active headphones except targets
     function getAvgAll() {
-        let v = activePhones.filter(p => !p.isTarget).map(p => getAvg(p));
+        let PB = p => p.isPrefBounds ? p.isPrefBounds : false;
+        let v = activePhones.filter(p => !p.isTarget && !PB(p)).map(p => getAvg(p));
         return avgCurves(v);
     }
     // draw average of all active headphones

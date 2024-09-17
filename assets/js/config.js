@@ -43,19 +43,21 @@ const targets = [
 ];
 
 // Haruto's Addons
-const  preference_bounds_name = "Preference Bounds RAW", // Preference bounds name
-       preference_bounds_dir = "assets/pref_bounds/",    // Preference bounds directory
-       preference_bounds_startup = false,           // If true, preference bounds are displayed on startup
-       PHONE_BOOK = "phone_book.json",              // Path to phone book JSON file
-       default_DF_name = "KEMAR DF",                // Default RAW DF name
-       dfBaseline = true,                           // If true, DF is used as baseline when custom df tilt is on
-       default_bass_shelf = 8,                      // Default Custom DF bass shelf value
-       default_tilt = -0.8,                         // Default Custom DF tilt value
-       default_ear = 0,                             // Default Custom DF ear gain value
-       default_treble = 0,                          // Default Custom DF treble gain value
-       tiltableTargets = ["KEMAR DF"],              // Targets that are allowed to be tilted
-       compTargets = ["KEMAR DF"],                  // Targets that are allowed to be used for compensation
-       allowCreatorSupport = true;                  // Allow the creator to have a button top right to support them
+const  preference_bounds_name = "Preference Bounds RAW",  // Preference bounds name
+       preference_bounds_dir = "assets/pref_bounds/",  // Preference bounds directory
+       preference_bounds_startup = false,              // If true, preference bounds are displayed on startup
+       allowSquigDownload = false,                     // If true, allows download of measurement data
+       PHONE_BOOK = "phone_book.json",                 // Path to phone book JSON file
+       default_y_scale = "40db",                       // Default Y scale; values: ["20db", "30db", "40db", "50db", "crin"]
+       default_DF_name = "KEMAR DF",                   // Default RAW DF name
+       dfBaseline = true,                              // If true, DF is used as baseline when custom df tilt is on
+       default_bass_shelf = 8,                         // Default Custom DF bass shelf value
+       default_tilt = -0.8,                            // Default Custom DF tilt value
+       default_ear = 0,                                // Default Custom DF ear gain value
+       default_treble = 0,                             // Default Custom DF treble gain value
+       tiltableTargets = ["KEMAR DF"],                 // Targets that are allowed to be tilted
+       compTargets = ["KEMAR DF"],                     // Targets that are allowed to be used for compensation
+       allowCreatorSupport = true;                     // Allow the creator to have a button top right to support them
 
 // *************************************************************
 // Functions to support config options set above; probably don't need to change these
@@ -129,7 +131,7 @@ setLayout();
 const 
     // Short text, center-aligned, useful for a little side info, credits, links to measurement setup, etc. 
     simpleAbout = `
-        <p class="center">This graph database is maintained by HarutoHiroki with frequency responses generated via an "IEC60318-4"-compliant ear simulator. This web software is based on the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project, with <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a>'s definition source.</p>
+        <p class="center">This graph database is maintained by HarutoHiroki with frequency responses generated via an "IEC60318-4"-compliant ear simulator. This web software is based on a heavily modified version of the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project, with <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a>'s definition source.</p>
     `,
     // Which of the above variables to actually insert into the page
     whichAccessoriesToUse = simpleAbout;
@@ -146,6 +148,18 @@ const linkSets = [
                 url: "https://iems.audiodiscourse.com/"
             },
             {
+                name: "Bad Guy",
+                url: "https://hbb.squig.link/"
+            },
+            {
+                name: "Banbeucmas",
+                url: "https://banbeu.com/graph/tool/"
+            },
+            {
+                name: "HypetheSonics",
+                url: "https://www.hypethesonics.com/iemdbc/"
+            },
+            {
                 name: "In-Ear Fidelity",
                 url: "https://crinacle.com/graphs/iems/graphtool/"
             },
@@ -158,8 +172,12 @@ const linkSets = [
                 url: "https://squig.link/"
             },
             {
-                name: "Timmy",
+                name: "Timmy (Gizaudio)",
                 url: "https://timmyv.squig.link/"
+            },
+            {
+                name: "Rohsa",
+                url: "https://rohsa.gitlab.io/graphtool/"
             },
         ]
     },
@@ -221,7 +239,7 @@ let headerLogoText = "HarutoHiroki",
     },
     {
         name: "Donate",
-        url: "https://www.paypal.me/harutohirokiUS"
+        url: "https://ko-fi.com/harutohiroki"
     },
 //  {
 //      name: "GitHub",
@@ -259,12 +277,12 @@ let tutorialDefinitions = [
     {
         name: 'Presence',
         width: '5.9%',
-        description: 'The Presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
+        description: 'The presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
     },
     {
-        name: 'Treble',
+        name: 'Brilliance',
         width: '17.4%',
-        description: 'The Treble range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
+        description: 'The brilliance range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
     }
 ]
 

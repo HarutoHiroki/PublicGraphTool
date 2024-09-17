@@ -31,6 +31,9 @@ https://graphtool-demo.harutohiroki.com/
 - Per-measurement compensation (requested by listener)
 - Added support for Haruto's Graph Extension to apply eq to browserwide 
 - Made Preference Bounds better and not relying on a png anymore
+- Downloadable CSV of all active graphs
+- Per page Y scaling (requested by listener)
+- Added a Graph Customisation menu
 
 
 # TODO
