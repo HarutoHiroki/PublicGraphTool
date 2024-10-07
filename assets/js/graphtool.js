@@ -2549,7 +2549,12 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     doc.select("#recolor").on("click", function () {
         allPhones.forEach(p => { if (!p.isTarget) { delete p.id; } });
         phoneNumber = 0; nextPN = null;
-        activePhones.forEach(p => { if (!p.isTarget) { p.id = getPhoneNumber(); } });
+        activePhones.forEach(p => {
+            if (!p.isTarget) {
+                p.id = getPhoneNumber();
+                p.hexColor = hclToHex(getCurveColor(p.id,0));
+            }
+        });
         colorPhones();
     });
     
