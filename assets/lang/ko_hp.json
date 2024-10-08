@@ -1,0 +1,133 @@
+{
+  "header": {
+    "logoText": "HarutoHiroki",
+    "links": [
+      {
+        "name": "홈페이지",
+        "url": "https://harutohiroki.com"
+      },
+      {
+        "name": "랭킹",
+        "url": "https://docs.google.com/spreadsheets/d/1DZTac1BxCLdmS2J4DDQyvKSVUZGnNhz2r86qMGcs_Jo/edit?pli=1#gid=330037169"
+      },
+      {
+        "name": "디스코드",
+        "url": "https://discord.harutohiroki.com"
+      },
+      {
+        "name": "기부",
+        "url": "https://ko-fi.com/harutohiroki"
+      }
+    ]
+  },
+  "tutorial": [
+    {
+      "name": "극저음",
+      "width": "16%",
+      "description": "극저음은 일반적인 사람의 청각 범위를 벗어나는 특성이 있어, 이를 듣는다기보다 느낀다는 표현에 가까울법한 파워풀한 느낌을 줍니다."
+    },
+    {
+      "name": "저음",
+      "width": "20.6%",
+      "description": "소리의 \"두터운\" 또는 \"얇은\" 정도를 결정하며, 250hz 전후로 소리를 부스트하면 따뜻한 느낌을 더하는 경향이 있습니다. 저음을 좋아하신다면 이 음역대를 가장 좋아할 가능성이 높습니다."
+    },
+    {
+      "name": "중저음",
+      "width": "10.1%",
+      "description": "대부분 악기의 저차 고조파는 일반적으로 저음역대에 위치한다고 간주됩니다. 300Hz 전후의 신호를 부스트하면 저음 및 저음 악기의 선명도가 향상됩니다. 500Hz 주변에서 너무 많이 부스트하면 고음 악기 소리가 뭉개질 수 있습니다."
+    },
+    {
+      "name": "중음",
+      "width": "20%",
+      "description": "중음은 전반적인 사운드에서 악기가 얼마나 두드러지는지를 결정짓습니다. 약 1000Hz를 부스트하면 악기에 호른과 같은 음색을 줄 수 있습니다. 이 범위에서 과도한 출력은 소리가 작게 들리고 귀에 피로를 유발할 수 있습니다."
+    },
+    {
+      "name": "중고음",
+      "width": "10%",
+      "description": "중고음역대는 타악기 및 리듬 악기의 타격감을 담당합니다. 이 음역대를 부스트하면 존재감을 더할 수 있습니다. 그러나 3kHz 범위가 지나치게 강조되면 피로감을 유발할 수 있습니다."
+    },
+    {
+      "name": "고음",
+      "width": "5.9%",
+      "description": "고음은 사운드의 선명도과 명료함을 담당합니다. 과도하게 부스트하면 자극적이고 거친 사운드가 발생할 수 있습니다. 이 범위를 줄이면 소리가 더 멀고 투명하게 들립니다."
+    },
+    {
+      "name": "초고음",
+      "width": "17.4%",
+      "description": "초고음은 전적으로 고조파로만 구성되며 소리의 반짝임과 에어리함을 담당합니다. 이 영역을 과도하게 부스트하면 쉿 소리가 강조되고 귀에 피로를 유발할 수 있습니다."
+    }
+  ],
+  "accessories": {
+    "content": "<p class=\"center\">해당 그래프 데이터베이스는 HarutoHiroki가 관리하고 있습니다. \"IEC60318-4\"를 준수하는 이어 시뮬레이터를 활용한 주파수 응답 측정치들이 등재되어 있습니다. 본 웹 소프트웨어는 오픈소스 프로젝트 <a href=\"https://github.com/mlochbaum/CrinGraph\">CrinGraph</a>의 수정된 버전에 기반하고 있습니다. 음역대와 관련된 설명은 <a href=\"https://www.teachmeaudio.com/mixing/techniques/audio-spectrum\">Audio Spectrum</a>에서 발췌하였습니다.</p>"
+  },
+  "main": {
+    "pin": "고정",
+    "selectBrands": "브랜드",
+    "selectModels": "모델",
+    "selectEqualizer": "이퀄라이저",
+    "searchBar": "검색",
+    "copyUrl": "URL 복사",
+    "screenshot": "스크린샷",
+    "averageAll": "전체 평균화",
+    "yAxisScale": "세로 축 간격:",
+    "zoom": "확대:",
+    "bass": "저음",
+    "mids": "중음",
+    "treble": "고음",
+    "normalize": "노멀라이즈:",
+    "smooth": "스무딩:",
+    "inspect": "전체 가림",
+    "label": "라벨",
+    "recolor": "색상 변경",
+    "darkmode": "다크 모드",
+    "preferenceAdjustments": "선호도 조정:",
+    "tiltUnit": "틸트 (dB/Oct)",
+    "bassUnit": "저음 (dB)",
+    "trebleUnit": "고음 (dB)",
+    "earGainUnit": "이어 게인 (dB)",
+    "removeAdjustments": "조정값 제거",
+    "harmanFilters": "하만 필터",
+    "preferenceBounds": "선호도 경계",
+    "addHelp": "(또는 우클릭/Ctrl+클릭하여 선택하시거나, 다른 IEM을 고정하세요.)",
+    "lock": "잠금",
+    "selectModelAlert": "목록에서 기기를 선택하여 측정치를 불러오세요.",
+    "mobileHelper": "모든 그래프 보기",
+    "uploading": "업로드",
+    "uploadFR": "FR 업로드",
+    "uploadTarget": "타겟 업로드",
+    "uploadSong": "음원 업로드",
+    "uploadWarning": "업로드된 데이터는 저장되지 않습니다",
+    "parametricEqualizer": "파라메트릭 EQ",
+    "chooseEQModel": "EQ 모델 선택",
+    "preamp": "프리앰프",
+    "type": "타입",
+    "frequency": "주파수",
+    "gain": "게인",
+    "q": "Q",
+    "add": "+",
+    "remove": "-",
+    "sort": "정렬",
+    "disable": "비활성화",
+    "saveEQ": "EQ 저장",
+    "autoEqFrequencyRange": "주파수 범위",
+    "autoEqGainRange": "게인 범위",
+    "autoEqQRange": "Q 범위",
+    "autoEQ": "AutoEQ",
+    "readme": "Readme",
+    "eqDemo": "EQ 미리 듣기",
+    "pinkNoise": "핑크 노이즈",
+    "scarletFire": "Scarlet Fire",
+    "toneGenerator": "톤 제너레이터",
+    "uploaded": "업로드한 음원",
+    "toneGeneratorRange": "톤 제너레이터 범위",
+    "freq": "주파수",
+    "miscellaneous": "기타",
+    "left": "왼쪽",
+    "channelBalance": "채널 밸런스",
+    "right": "오른쪽",
+    "importEQ": "EQ 가져오기",
+    "exportParametricEQ": "파라메트릭 EQ 내보내기",
+    "exportGraphicEQ": "그래픽 EQ 내보내기 (웨이블릿)",
+    "autoEQRunning": "AutoEQ가 실행 중입니다. 5~20초 또는 더 오래 걸릴 수도 있습니다."
+  }
+}

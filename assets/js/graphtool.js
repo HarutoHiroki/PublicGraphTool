@@ -163,15 +163,17 @@ doc.html(`
           </div>
 
           <div class="extra-panel" style="display: none;">
-            <h4 style="margin:0 0 6px 0">Uploading</h4>
             <div class="extra-upload">
-              <button class="upload-fr">Upload FR</button>
-              <button class="upload-target">Upload Target</button>
-              <button class="upload-track">Upload Song</button>
-              <form style="display:none"><input type="file" id="file-fr" accept=".csv,.txt" /></form>
-              <form style="display:none"><input type="file" id="file-audio" accept="audio/*" /></form>
+              <h4 style="margin:0 0 6px 0">Uploading</h4>
+              <div class="extra-upload-buttons">
+                <button class="upload-fr">Upload FR</button>
+                <button class="upload-target">Upload Target</button>
+                <button class="upload-track">Upload Song</button>
+                <form style="display:none"><input type="file" id="file-fr" accept=".csv,.txt" /></form>
+                <form style="display:none"><input type="file" id="file-audio" accept="audio/*" /></form>
+              </div>
+              <span style="margin: 0 0 1em 0"><small>Uploaded data will not be persistent</small></span>
             </div>
-            <span style="margin: 0 0 1em 0"><small>Uploaded data will not be persistent</small></span>
             <div class="extra-eq">
               <h4 style="margin:0 0 6px 0">Parametric Equalizer</h4>
               <div class="select-eq-phone">
@@ -261,7 +263,7 @@ doc.html(`
               <h4 style="margin:0 0 3px 0">Miscellaneous</h4>
               <div class="settings-row" name="tone-gen-range" style="margin-top:0; text-align:center">
                 <span name="balance-l">Left</span>
-                <span name="title">Channel Balance</span>
+                <span name="balance-title" style="width:50%">Channel Balance</span>
                 <span name="balance-r">Right</span>
               </div>
               <div class="settings-row" style="margin:3px 0 6px 0;">
@@ -287,6 +289,8 @@ doc.html(`
     <div style="display: none" class="extra-eq-overlay">AutoEQ is running, it could take 5~20 seconds or more.</div>
   </main>
 `);
+// Update page translations
+updatePageTranslations();
 
 
 let pad = { l:15, r:15, t:10, b:36 };
@@ -2983,16 +2987,16 @@ function addExtra() {
     // Upload function
     let uploadType = null;
     let fileFR = document.querySelector("#file-fr");
-    document.querySelector("div.extra-upload > button.upload-fr").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-fr").addEventListener("click", () => {
         uploadType = "fr";
         fileFR.click();
     });
-    document.querySelector("div.extra-upload > button.upload-target").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-target").addEventListener("click", () => {
         uploadType = "target";
         fileFR.click();
     });
     let fileAudio = document.querySelector("#file-audio");
-    document.querySelector("div.extra-upload > button.upload-track").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-track").addEventListener("click", () => {
         uploadType = "audio";
         fileAudio.click();
     });
@@ -3832,6 +3836,27 @@ function addHeader() {
             altHeaderElem.setAttribute("data-links", "expanded");
         }
     });
+
+    if (allowLanguageSelector) {
+        const headerLangSelector = document.createElement('select');
+        headerLangSelector.className = "language-selector";
+
+        availableLanguages.forEach(lang => {
+            const langOption = document.createElement("option");
+            langOption.value = lang;
+            langOption.textContent = lang.toUpperCase();
+            headerLangSelector.appendChild(langOption);
+        });
+    
+        headerLangSelector.value = currentLanguage;
+        headerLangSelector.addEventListener("change", (e) => {
+            currentLanguage = e.target.value;
+            loadTranslations(currentLanguage);
+        });
+        
+        // Add the selector to your header or toolbar
+        altHeaderElem.append(headerLangSelector);
+    }
 }
 if (alt_layout && alt_header) { addHeader(); }
 
