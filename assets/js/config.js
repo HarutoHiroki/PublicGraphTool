@@ -58,7 +58,18 @@ const  preference_bounds_name = "Preference Bounds RAW",  // Preference bounds n
        tiltableTargets = ["KEMAR DF"],                 // Targets that are allowed to be tilted
        compTargets = ["KEMAR DF"],                     // Targets that are allowed to be used for compensation
        allowCreatorSupport = true;                     // Allow the creator to have a button top right to support them
+       allowLanguageSelector = true;                   // Add Language Selector on the top right of the page
+       availableLanguages = ["en", "ko"];              // List of available language codes. When you are adding a new language, make sure to use ISO 639-1 Language Codes for auto-detection.
+       defaultLanguage = "en";                         // Determine default (fallback) language. It should be included in the availableLanguages list.
+       useBrowserLangAsDefault = true;                 // If true, the browser's language will be used as the default language. If false, the defaultLanguage setting will be used as the default.
+       translateHeader = true;                         // If true, translated header link from language files will be used over the one from config.js
+       translateTutorial = true;                       // If true, translated tutorial from language files will be used over the one from config.js
+       translateAccessories = true;                    // If true, translated accessories from language files will be used over the one from config.js
+       translateTargetTypes = true;                    // If true, translated target types from language files will be used over the one from config.js
+       translateAlertMessages = true;                  // If true, translated alert messages from language files will be used.
 
+
+       
 // *************************************************************
 // Functions to support config options set above; probably don't need to change these
 // *************************************************************
@@ -132,9 +143,11 @@ const
     // Short text, center-aligned, useful for a little side info, credits, links to measurement setup, etc. 
     simpleAbout = `
         <p class="center">This graph database is maintained by HarutoHiroki with frequency responses generated via an "IEC60318-4"-compliant ear simulator. This web software is based on a heavily modified version of the <a href="https://github.com/mlochbaum/CrinGraph">CrinGraph</a> open source software project, with <a href="https://www.teachmeaudio.com/mixing/techniques/audio-spectrum">Audio Spectrum</a>'s definition source.</p>
-    `,
+    `
+    ;
     // Which of the above variables to actually insert into the page
-    whichAccessoriesToUse = simpleAbout;
+    // If you are using custom accessories, you may need to change loadTranslations() in translate.js to utilize custom accessories
+let whichAccessoriesToUse = simpleAbout;
 
 
 
@@ -246,6 +259,9 @@ let headerLogoText = "HarutoHiroki",
 //      url: "https://github.com/HarutoHiroki"
 //  },
 ];
+let whichHeaderLogoTextToUse = headerLogoText;
+let whichHeaderLogoImgUrlToUse = headerLogoImgUrl;
+let whichHeaderLinksToUse = headerLinks;
 
 // Source: https://www.teachmeaudio.com/mixing/techniques/audio-spectrum
 let tutorialDefinitions = [
@@ -285,6 +301,7 @@ let tutorialDefinitions = [
         description: 'The brilliance range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
     }
 ]
+let whichTutorialDefinitionsToUse = tutorialDefinitions;
 
 // o == offset
 // l ==

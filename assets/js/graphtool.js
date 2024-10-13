@@ -163,15 +163,17 @@ doc.html(`
           </div>
 
           <div class="extra-panel" style="display: none;">
-            <h4 style="margin:0 0 6px 0">Uploading</h4>
             <div class="extra-upload">
-              <button class="upload-fr">Upload FR</button>
-              <button class="upload-target">Upload Target</button>
-              <button class="upload-track">Upload Song</button>
-              <form style="display:none"><input type="file" id="file-fr" accept=".csv,.txt" /></form>
-              <form style="display:none"><input type="file" id="file-audio" accept="audio/*" /></form>
+              <h4 style="margin:0 0 6px 0">Uploading</h4>
+              <div class="extra-upload-buttons">
+                <button class="upload-fr">Upload FR</button>
+                <button class="upload-target">Upload Target</button>
+                <button class="upload-track">Upload Song</button>
+                <form style="display:none"><input type="file" id="file-fr" accept=".csv,.txt" /></form>
+                <form style="display:none"><input type="file" id="file-audio" accept="audio/*" /></form>
+              </div>
+              <span style="margin: 0 0 1em 0"><small>Uploaded data will not be persistent</small></span>
             </div>
-            <span style="margin: 0 0 1em 0"><small>Uploaded data will not be persistent</small></span>
             <div class="extra-eq">
               <h4 style="margin:0 0 6px 0">Parametric Equalizer</h4>
               <div class="select-eq-phone">
@@ -179,7 +181,7 @@ doc.html(`
                     <option value="" selected>Choose EQ model</option>
                 </select>
               </div>
-              <h3 id="preamp-disp" style="margin-top:12px">Pre-amp: 0.0 dB</h3>
+              <h4 id="preamp-disp" style="margin-top:12px">Pre-amp: 0.0 dB</h4>
               <div class="filters-header">
                 <span>Type</span>
                 <span>Frequency</span>
@@ -261,7 +263,7 @@ doc.html(`
               <h4 style="margin:0 0 3px 0">Miscellaneous</h4>
               <div class="settings-row" name="tone-gen-range" style="margin-top:0; text-align:center">
                 <span name="balance-l">Left</span>
-                <span name="title">Channel Balance</span>
+                <span name="balance-title" style="width:50%">Channel Balance</span>
                 <span name="balance-r">Right</span>
               </div>
               <div class="settings-row" style="margin:3px 0 6px 0;">
@@ -287,6 +289,8 @@ doc.html(`
     <div style="display: none" class="extra-eq-overlay">AutoEQ is running, it could take 5~20 seconds or more.</div>
   </main>
 `);
+// Update page translations
+updatePageTranslations();
 
 
 let pad = { l:15, r:15, t:10, b:36 };
@@ -976,7 +980,7 @@ function loadFiles(p, callback) {
                 sampnums.map(n => l(p.fileName+" "+s+n))));
     Promise.all(f).then(function (frs) {
         if (!frs.some(f=>f!==null)) {
-            alert("Headphone not found!");
+            alert(getAlertMessage("headphoneNotFound"));
         } else {
             let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
             ch = ch.filter(c => c !== null); // Remove null elements
@@ -1469,7 +1473,7 @@ function loadPrefBounds(callback) {
     let f = LR.map(s =>lpf(preference_bounds_name+" "+s))
     Promise.all(f).then(function (frs) {
         if (!frs.some(f=>f!==null)) {
-            alert("Bounds not found!");
+            alert(getAlertMessage("boundsNotFound"));
         } else {
             let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
             ch = ch.filter(c => c !== null); // Remove null elements
@@ -2273,7 +2277,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         // check if user is trying to tilt non tiltable targets
         let activeTarget = activePhones.filter(p => p.isTarget)[0];
         if (activeTarget.isTarget && !tiltableTargets.includes(activeTarget.dispName) && activeTarget.phone != "Custom Tilt") {
-            return alert("This target is not supported for Custom Tilt");
+            return alert(getAlertMessage("customTiltNotSupported"));
         }
         // Bass Shelf
         let filters = [
@@ -2983,16 +2987,16 @@ function addExtra() {
     // Upload function
     let uploadType = null;
     let fileFR = document.querySelector("#file-fr");
-    document.querySelector("div.extra-upload > button.upload-fr").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-fr").addEventListener("click", () => {
         uploadType = "fr";
         fileFR.click();
     });
-    document.querySelector("div.extra-upload > button.upload-target").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-target").addEventListener("click", () => {
         uploadType = "target";
         fileFR.click();
     });
     let fileAudio = document.querySelector("#file-audio");
-    document.querySelector("div.extra-upload > button.upload-track").addEventListener("click", () => {
+    document.querySelector("div.extra-upload-buttons > button.upload-track").addEventListener("click", () => {
         uploadType = "audio";
         fileAudio.click();
     });
@@ -3027,7 +3031,7 @@ function addExtra() {
             let phone = { name: name };
             let ch = [tsvParse(e.target.result)];
             if (ch[0].length < 32) {
-                alert("Parse frequence response file failed: invalid format.");
+                alert(getAlertMessage("parseFRFailed"));
                 return;
             }
             ch[0] = Equalizer.interp(f_values, ch[0]);
@@ -3039,7 +3043,7 @@ function addExtra() {
                 let fullName = name + (name.match(/ Target$/i) ? "" : " Target");
                 let existsTargets = targets.reduce((a, b) => a.concat(b.files), []).map(f => f += " Target");
                 if (existsTargets.indexOf(fullName) >= 0) {
-                    alert("This target already exists on this tool, please select it instead of uploading.");
+                    alert(getAlertMessage("targetAlreadyExists"));
                     return;
                 }
                 let phoneObj = {
@@ -3248,7 +3252,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
-            alert("Please select model and add at least one filter before saving.");
+            alert(getAlertMessage("noFiltersSelectedForSave"));
             return;
         }
 
@@ -3301,7 +3305,7 @@ function addExtra() {
                 filtersToElem(filters);
                 applyEQ();
             } else {
-                alert("Parse filters file failed: no filter found.");
+                alert(getAlertMessage("parseFiltersFailed"));
             }
         };
         reader.readAsText(file);
@@ -3313,7 +3317,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
-            alert("Please select model and add at least one filter before exporting.");
+            alert(getAlertMessage("noFiltersSelectedForExport"));
             return;
         }
         let preamp = Equalizer.calc_preamp(
@@ -3344,7 +3348,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0] || { fullName: "Unnamed" };
         let filters = elemToFilters();
         if (!filters.length) {
-            alert("Please add at least one filter before exporting.");
+            alert(getAlertMessage("noFiltersSelectedForExport"));
             return;
         }
         let graphicEQ = Equalizer.as_graphic_eq(filters);
@@ -3358,11 +3362,7 @@ function addExtra() {
     });
     // Readme
     document.querySelector("div.extra-eq button.readme").addEventListener("click", () => {
-        alert("1. If you want to AutoEQ model A to B, display A B and remove targets.\n" +
-            "2. Adding/Removing bands before AutoEQ may give you a better results.\n" +
-            "3. Using PK filters close to 20kHz is finnicky; avoid touching frequencies beyond 15kHz if you're not sure how your DSP software works.\n" +
-            "4. EQing treble frequencies require resonant peak matching and fine-tuning by ear. Keep the treble regions untouched if you're new to EQing.\n" +
-            "5. Use the Tone Generator inside EQ Demo dropdown to find the actual location of peaks and dips to your own ears. Do note that the web version may not work on some platforms.\n");
+        alert(getAlertMessage("equalizerReadMe").join("\n"));
     });
     // AutoEQ
     let autoEQFromInput = document.querySelector("div.extra-eq input[name='autoeq-from']");
@@ -3391,7 +3391,7 @@ function addExtra() {
         let targetObj = (activePhones.filter(p => p.isTarget)[0] ||
             activePhones.filter(p => p !== phoneObj && !p.isTarget)[0]);
         if (!phoneObj || !targetObj) {
-            alert("Please select model and target, if there are no targets and multiple models are displayed then the second one will be selected as target.");
+            alert(getAlertMessage("autoEQFilterAlert"));
             return;
         }
         let autoEQOverlay = document.querySelector(".extra-eq-overlay");
@@ -3450,7 +3450,7 @@ function addExtra() {
     //* ---------- Audio Context ---------- *//
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (!audioContext) {
-        alert("Web audio api is disabled, please enable it if you want to use EQ testing functions.");
+        alert(getAlertMessage("webAudioNotSupported"));
         return;
     }
 
@@ -3634,7 +3634,7 @@ function addExtra() {
                     break;
                 case "custom-eq-track":
                     if (!uploadedAudio || !uploadedSource) {
-                        alert("Please upload an audio file first.");
+                        alert(getAlertMessage("noAudioUploaded"));
                         eqTrack.value = "pink";
                         currentAudio = pinkNoiseAudio;
                         currentSource = pinkNoiseSource;
@@ -3832,6 +3832,27 @@ function addHeader() {
             altHeaderElem.setAttribute("data-links", "expanded");
         }
     });
+
+    if (allowLanguageSelector) {
+        const headerLangSelector = document.createElement('select');
+        headerLangSelector.className = "language-selector";
+
+        availableLanguages.forEach(lang => {
+            const langOption = document.createElement("option");
+            langOption.value = lang;
+            langOption.textContent = lang.toUpperCase();
+            headerLangSelector.appendChild(langOption);
+        });
+    
+        headerLangSelector.value = currentLanguage;
+        headerLangSelector.addEventListener("change", (e) => {
+            currentLanguage = e.target.value;
+            loadTranslations(currentLanguage);
+        });
+        
+        // Add the selector to your header or toolbar
+        altHeaderElem.append(headerLangSelector);
+    }
 }
 if (alt_layout && alt_header) { addHeader(); }
 

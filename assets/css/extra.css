@@ -38,8 +38,7 @@ button#yscalebtn:active {
   color: var(--font-color-secondary);
 }
 
-button#avg-all,
-button#yscalebtn {
+button#avg-all {
   margin-left: 6px;
 }
 
@@ -56,11 +55,14 @@ div.yscaler {
 
 div.yscaler > span {
   margin-right: 10px;
+  min-width: max-content;
+
   color: var(--background-color-contrast-more);
   font-family: var(--font-secondary);
   font-size: 11px;
   line-height: 1em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 div.yscaler > div {
@@ -500,7 +502,7 @@ span:has(input[name="vol-right"]):after {
 div.extra-panel div.settings-row,
 div.extra-panel div.auto-eq-button,
 div.extra-panel div.filters-button,
-div.extra-panel div.extra-upload {
+div.extra-panel div.extra-upload-buttons {
   width: 100%;
   margin: 4px 0 0 0;
   box-sizing: border-box;
@@ -514,7 +516,7 @@ div.extra-panel h4 {
   margin-bottom: 4px;
 }
 
-div.extra-panel div.extra-upload > button {
+div.extra-panel div.extra-upload-buttons > button {
   width: 33.3%;
 }
 
