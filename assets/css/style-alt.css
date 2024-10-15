@@ -374,6 +374,14 @@ div.logo span {
     color: var(--header-links-color);
 }
 
+select.language-selector {
+    border-radius: 4px;
+    background-color: #000000;
+    color: #ffffff;
+    padding: 7px;
+    margin-right: 10px;
+}
+
 ul.header-links {
     display: flex;
     justify-content: flex-start;
@@ -651,12 +659,14 @@ div.zoom {
 
 div.zoom > span {
     margin-right: 10px;
+    min-width: max-content;
 
     color: var(--background-color-contrast-more);
     font-family: var(--font-secondary);
     font-size: 11px;
     line-height: 1em;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 div.zoom button {
@@ -715,12 +725,14 @@ div.normalize {
 
 div.normalize > span {
     margin-right: 10px;
+    min-width: max-content;
 
     color: var(--background-color-contrast-more);
     font-family: var(--font-secondary);
     font-size: 11px;
     line-height: 1em;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 div.normalize .helptip {
@@ -814,12 +826,14 @@ div.smooth {
 
 div.smooth > span {
     margin-right: 10px;
+    min-width: max-content;
 
     color: var(--background-color-contrast-more);
     font-family: var(--font-secondary);
     font-size: 11px;
     line-height: 1em;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 div.smooth input {
@@ -988,7 +1002,7 @@ div.targets > div.targetLabel {
 }
 
 .targetClass div.targetLabel:after {
-    content: ' targets:';
+    content: attr(targetLabelSuffix);
     white-space: pre;
 }
 
