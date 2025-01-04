@@ -1972,6 +1972,21 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
         removePhone(p);
         return;
     }
+    if (p.isTarget && p.phone !== "Custom Tilt") {
+        // Remove the same target with the custom tilt
+        if (activePhones.filter(e => e.fileName === p.fileName && e.phone === "Custom Tilt").length > 0) {
+            activePhones = activePhones.filter(e => e.fileName !== p.fileName || e.phone !== "Custom Tilt");
+            removePhone(p);
+            return;
+        }
+    }
+    if (p.isTarget && p.phone === "Custom Tilt") {
+        // Replace the same target with the custom tilt
+        if (activePhones.filter(e => e.fileName === p.fileName).length > 0) {
+            activePhones = activePhones.filter(e => e.fileName !== p.fileName && e.phone !== "Custom Tilt");
+            updatePhoneTable();
+        }
+    }
     if (addPhoneSet) {
         exclusive = false;
         if (!addPhoneLock) {
@@ -2022,11 +2037,15 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     if (p.isTarget && tiltableTargets.includes(p.dispName)) { // Tilt the target
         customTiltName = p.dispName;
         if (p.dispName == "∆") customTiltName = "Delta (∆)";
-        df = p;
+        if (df !== p) {
+            removePhone(df);
+            df = p;
+        }
         dfBase = getBaseline(df);
         prepPrefBounds();
         updateDF(boost, tilt, ear, treble);
     } else if (p.isTarget && !tiltableTargets.includes(p.dispName) && p.phone != "Custom Tilt") {
+        removePhone(df);
         customTiltName = p.dispName;
         if (p.dispName == "∆") customTiltName = "Delta (∆)";
         setBaseline(baseline0,1);
@@ -2338,7 +2357,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
             fullName:customTiltName + preferenceAdjustments,
             dispName:customTiltName + preferenceAdjustments,
-            fileName:"Custom Tilt"};
+            fileName:customTiltName + " Target"};
         phoneObj.rawChannels = [tiltOct];
         phoneObj.id = -69;
         
