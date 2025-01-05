@@ -34,7 +34,8 @@ https://graphtool-demo.harutohiroki.com/
 - Downloadable CSV of all active graphs
 - Per page Y scaling (requested by listener)
 - Added a Graph Customisation menu
-
+- Added Translations (Thanks to potatosalad775)
+- Brought the public version up to date
 
 # TODO
 - Implement a way to measure the SPL of an IEM and decide whether to upload it or not, skipping REW

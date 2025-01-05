@@ -43,7 +43,7 @@ const targets = [
 ];
 
 // Haruto's Addons
-const  preference_bounds_name = "Preference Bounds RAW",  // Preference bounds name
+const  preference_bounds_name = "Bounds",  // Preference bounds name
        preference_bounds_dir = "assets/pref_bounds/",  // Preference bounds directory
        preference_bounds_startup = false,              // If true, preference bounds are displayed on startup
        allowSquigDownload = false,                     // If true, allows download of measurement data
@@ -68,8 +68,16 @@ const  preference_bounds_name = "Preference Bounds RAW",  // Preference bounds n
        translateTargetTypes = true;                    // If true, translated target types from language files will be used over the one from config.js
        translateAlertMessages = true;                  // If true, translated alert messages from language files will be used.
 
+const harmanFilters = [
+    { name: "Harman C1 2024 IE", tilt: -0.9, bass_shelf: 1, ear: 0, treble: 0.5 },
+    { name: "Harman C2 2024 IE", tilt: -0.3, bass_shelf: .5, ear: -0.2, treble: 1 },
+    { name: "Harman C3 2024 IE", tilt: -2.1, bass_shelf: 0, ear: 0, treble: 10 },
+    { name: "Harman C4 2024 IE", tilt: -2.1, bass_shelf: 0, ear: 0.5, treble: 3.7 },
+    { name: "Harman 2013 OE", tilt: 0, bass_shelf: 4.8, ear: 0, treble: -4.4 },
+    { name: "Harman 2015 OE", tilt: 0, bass_shelf: 6.6, ear: 0, treble: -1.4 },
+    { name: "Harman 2018 OE", tilt: 0, bass_shelf: 6.6, ear: -1.8, treble: -3 },
+]
 
-       
 // *************************************************************
 // Functions to support config options set above; probably don't need to change these
 // *************************************************************
@@ -153,6 +161,15 @@ let whichAccessoriesToUse = simpleAbout;
 
 // Configure external links to appear at the bottom of the page. Displayed only if externalLinksBar (above) is true
 const linkSets = [
+    {
+        label: "Contributors",
+        links: [
+            {
+                name: "potatosalad775 (Jinwoo Lee)",
+                url: "https://github.com/potatosalad775/"
+            },
+        ]
+    },
     {
         label: "IEM graph databases",
         links: [
@@ -247,17 +264,13 @@ let headerLogoText = "HarutoHiroki",
         url: "https://docs.google.com/spreadsheets/d/1DZTac1BxCLdmS2J4DDQyvKSVUZGnNhz2r86qMGcs_Jo/edit?pli=1#gid=330037169"
     },
     {
-        name: "Discord",
-        url: "https://discord.harutohiroki.com"
-    },
-    {
         name: "Donate",
         url: "https://ko-fi.com/harutohiroki"
     },
-//  {
-//      name: "GitHub",
-//      url: "https://github.com/HarutoHiroki"
-//  },
+    {
+        name: "GitHub",
+        url: "https://github.com/HarutoHiroki"
+    },
 ];
 let whichHeaderLogoTextToUse = headerLogoText;
 let whichHeaderLogoImgUrlToUse = headerLogoImgUrl;
