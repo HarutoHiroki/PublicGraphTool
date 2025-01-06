@@ -3817,17 +3817,19 @@ function addHeader() {
     linksList.className = "header-links";
     altHeaderElem.append(linksList);
     
-    headerLinks.forEach(function(link) {
-        let linkContainerElem = document.createElement("li"),
-            linkElem = document.createElement("a");
-        
-        linkElem.setAttribute("href", link.url);
-        linkElem.setAttribute("target", "_blank");
-        linkElem.setAttribute('style', "color: #ffffff");
-        linkElem.textContent = link.name;
-        linkContainerElem.append(linkElem);
-        linksList.append(linkContainerElem);
-    })
+    if(headerLinks) {
+        headerLinks.forEach(function(link) {
+            let linkContainerElem = document.createElement("li"),
+                linkElem = document.createElement("a");
+            
+            linkElem.setAttribute("href", link.url);
+            linkElem.setAttribute("target", "_blank");
+            linkElem.setAttribute('style', "color: #ffffff");
+            linkElem.textContent = link.name;
+            linkContainerElem.append(linkElem);
+            linksList.append(linkContainerElem);
+        }
+    )}
 
     if (allowCreatorSupport) {
         // custom Ko-fi button
