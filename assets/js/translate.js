@@ -7,7 +7,7 @@ function loadCurrentLanguage() {
   }
   
   // If the browser language is supported, use it, otherwise use the default language
-  if (useBrowserLangAsDefault) {
+  if (allowLanguageSelector && useBrowserLangAsDefault) {
     const browserLang = navigator.language.split('-')[0];
     return availableLanguages.includes(browserLang) ? browserLang : _defLang;
   } else {
