@@ -1265,7 +1265,7 @@ function addPhonesToUrl() {
         url += "?share=" + encodeURI(names.join().replace(/ /g,"_"));
         title = namesCombined + " - " + title;
     }
-    if (names.includes("Custom Tilt")) {
+    if (tiltableTargets.some(target => names.includes(target + " Target"))) {
         url += "&bass="+boost+"&tilt="+tilt+"&treble="+treble+"&ear="+ear;
     }
     if (names.length === 1) {
@@ -2036,7 +2036,6 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     }
     if (p.isTarget && tiltableTargets.includes(p.dispName)) { // Tilt the target
         customTiltName = p.dispName;
-        if (p.dispName == "∆") customTiltName = "Delta (∆)";
         if (df !== p) {
             removePhone(df);
             df = p;
@@ -2047,7 +2046,6 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     } else if (p.isTarget && !tiltableTargets.includes(p.dispName) && p.phone != "Custom Tilt") {
         removePhone(df);
         customTiltName = p.dispName;
-        if (p.dispName == "∆") customTiltName = "Delta (∆)";
         setBaseline(baseline0,1);
     }
     updatePaths(trigger);
@@ -2276,17 +2274,10 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     }
 
     df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-    if (isInit("Custom Tilt") || init_phones.includes(default_DF_name + " Target")) {
+    if (init_phones.includes(default_DF_name + " Target")) {
         showPhone(df);
         updateDispVals();
     }
-    loadFiles(df, function (ch) {
-        df.rawChannels = ch;
-        smoothPhone(df);
-        normalizePhone(df);
-        df.offset=df.offset||0;
-        dfBase = getBaseline(df);
-    });
 
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
@@ -2475,7 +2466,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         } else {
             boundsBtn.classed("selected", true);
             // set baseline
-            showPhone(df, true);
             setBaseline(dfBase);
             
             // show preference bounds

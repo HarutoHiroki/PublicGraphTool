@@ -43,8 +43,8 @@ const targets = [
 ];
 
 // Haruto's Addons
-const  preference_bounds_name = "Bounds", // Preference bounds name
-       preference_bounds_dir = "assets/pref_bounds/",    // Preference bounds directory
+const  preference_bounds_name = "Bounds",              // Preference bounds name
+       preference_bounds_dir = "assets/pref_bounds/",  // Preference bounds directory
        preference_bounds_startup = false,              // If true, preference bounds are displayed on startup
        allowSquigDownload = false,                     // If true, allows download of measurement data
        PHONE_BOOK = "phone_book_hp.json",              // Path to phone book JSON file
@@ -259,9 +259,13 @@ let headerLogoText = "HarutoHiroki",
         url: "https://docs.google.com/spreadsheets/d/1DZTac1BxCLdmS2J4DDQyvKSVUZGnNhz2r86qMGcs_Jo/edit?pli=1#gid=330037169"
     },
     {
-        name: "Donate",
-        url: "https://ko-fi.com/harutohiroki"
+        name: "Discord",
+        url: "https://discord.harutohiroki.com"
     },
+//  {
+//      name: "Donate",
+//      url: "https://ko-fi.com/harutohiroki"
+//  },
     {
         name: "GitHub",
         url: "https://github.com/HarutoHiroki"
@@ -301,12 +305,12 @@ let tutorialDefinitions = [
     {
         name: 'Presence',
         width: '5.9%',
-        description: 'The presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
+        description: 'The Presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent.'
     },
     {
-        name: 'Brilliance',
+        name: 'Treble',
         width: '17.4%',
-        description: 'The brilliance range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
+        description: 'The Treble range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
     }
 ]
 let whichTutorialDefinitionsToUse = tutorialDefinitions;
