@@ -32,7 +32,7 @@ async function loadTranslations(lang) {
     translations = await response.json();
 
     // Set up header, tutorial, and accessories content if the language is English
-    if(lang == "en") {
+    if(lang === "en") {
       whichHeaderLogoTextToUse = headerLogoText;
       whichHeaderLinksToUse = headerLinks;
       whichTutorialDefinitionsToUse = tutorialDefinitions;
@@ -40,14 +40,16 @@ async function loadTranslations(lang) {
     }
     // Otherwise, use translated content
     else {
-      if (translateHeader) {
+      if (translateHeader && headerLogoText) {
         whichHeaderLogoTextToUse = translations.header.logoText || headerLogoText;
+      }
+      if (translateHeader && headerLinks && translations.header.links.length === headerLinks.length) {
         whichHeaderLinksToUse = translations.header.links || headerLinks;
       }
-      if (translateTutorial) {
+      if (translateTutorial && tutorialDefinitions) {
         whichTutorialDefinitionsToUse = translations.tutorial || tutorialDefinitions;
       }
-      if (translateAccessories) {
+      if (translateAccessories && simpleAbout) {
         whichAccessoriesToUse = translations.accessories.content || simpleAbout;
       }
     }
@@ -278,12 +280,12 @@ function updateTranslations() {
 // Update Header Content
 function updateHeaderContent() {
   const logoImgElement = document.querySelector(".logo a img");
-  if (logoImgElement) {
+  if (logoImgElement && headerLogoImgUrl) {
     logoImgElement.src = whichHeaderLogoImgUrlToUse || headerLogoImgUrl;
   }
 
   const logoTextElement = document.querySelector(".logo a span");
-  if (logoTextElement) {
+  if (logoTextElement && headerLogoText) {
     logoTextElement.textContent = whichHeaderLogoTextToUse || headerLogoText;
   }
 
