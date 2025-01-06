@@ -1,4 +1,66 @@
 {
+  "header": {
+    "logoText": "HarutoHiroki",
+    "links": [
+      {
+        "name": "Home",
+        "url": "https://harutohiroki.com"
+      },
+      {
+        "name": "Ranking",
+        "url": "https://docs.google.com/spreadsheets/d/1DZTac1BxCLdmS2J4DDQyvKSVUZGnNhz2r86qMGcs_Jo/edit?pli=1#gid=330037169"
+      },
+      {
+        "name": "Discord",
+        "url": "https://discord.harutohiroki.com"
+      },
+      {
+        "name": "GitHub",
+        "url": "https://github.com/HarutoHiroki"
+      }
+    ]
+  },
+  "tutorial": [
+    {
+      "name": "Sub bass",
+      "description": "The Rumble, usually out of human's hearing range and tend to be felt more than heard, providing a sense of power."
+    },
+    {
+      "name": "Bass",
+      "description": "Determins how \"fat\" or \"thin\" the sound is, boosting around 250hz tend to add a feeling of warmth. If you're a bass head you most likely like this range."
+    },
+    {
+      "name": "Lower Mids",
+      "description": "Low order harmonics of most instruments, generally viewed as the bass presence range. Boosting a signal around 300 Hz adds clarity to the bass and lower-stringed instruments. Too much boost around 500 Hz can make higher-frequency instruments sound muffled."
+    },
+    {
+      "name": "Midrange",
+      "description": "The midrange determines how prominent an instrument is in the mix. Boosting around 1000 Hz can give instruments a horn-like quality. Excess output at this range can sound tinny and may cause ear fatigue."
+    },
+    {
+      "name": "Upper Mids",
+      "description": "The high midrange is responsible for the attack on percussive and rhythm instruments. If boosted, this range can add presence. However, too much boost around the 3 kHz range can cause listening fatigue."
+    },
+    {
+      "name": "Presence",
+      "description": "The Presence range is responsible for the clarity and definition of a sound. Over-boosting can cause an irritating, harsh sound. Cutting in this range makes the sound more distant and transparent."
+    },
+    {
+      "name": "Treble",
+      "description": "The Treble range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue."
+    }
+  ],
+  "accessories": {
+    "content": "<p class=\"center\">This graph database is maintained by HarutoHiroki with frequency responses generated via an \"IEC60318-4\"-compliant ear simulator. This web software is based on a heavily modified version of the <a href=\"https://github.com/mlochbaum/CrinGraph\">CrinGraph</a> open source software project, with <a href=\"https://www.teachmeaudio.com/mixing/techniques/audio-spectrum\">Audio Spectrum</a>'s definition source.</p>"
+  },
+  "targets": {
+    "Reference": "Reference",
+    "Neutral": "Neutral",
+    "Reviewer": "Reviewer",
+    "Community": "Community",
+    "Preference": "Preference",
+    "TARGETS": "Targets"
+  },
   "main": {
     "pin": "PIN",
     "selectBrands": "Brands",
