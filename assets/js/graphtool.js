@@ -2274,13 +2274,19 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     }
 
     df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
-    if (init_phones.includes(default_DF_name + " Target")) {
-        showPhone(df);
-        updateDispVals();
-    }
-
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
+    
+    // band-aid
+    loadFiles(df, function (ch) {
+        df.rawChannels = ch;
+        smoothPhone(df);
+        normalizePhone(df);
+        df.offset=df.offset||0;
+        dfBase = getBaseline(df);
+        prepPrefBounds();
+        df.rawChannels = null;
+    });
 
     // update y scaling
     checkUserDefaultScale();
