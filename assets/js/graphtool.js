@@ -2285,13 +2285,20 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         df.offset=df.offset||0;
         dfBase = getBaseline(df);
         prepPrefBounds();
-        df.rawChannels = null;
     });
 
     // update y scaling
     checkUserDefaultScale();
 
     // -------------------- Custom DF Tilt -------------------- //
+    function updateDispVals() {
+        doc.select("#cusdf-bass").node().value = boost;
+        doc.select("#cusdf-tilt").node().value = tilt;
+        doc.select("#cusdf-ear").node().value = ear;
+        doc.select("#cusdf-treb").node().value = treble;
+    }
+    updateDispVals();
+
     let UnTiltTHIS = doc.select("#cusdf-UnTiltTHIS");
     // if UnTiltTHIS is clicked, switch df to current active target if exists
     UnTiltTHIS.on("click", function () {
@@ -2386,13 +2393,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         } else if (change === "treble") {
             doc.select("#cusdf-treb").node().focus();
         }
-    }
-
-    function updateDispVals() {
-        doc.select("#cusdf-bass").node().value = boost;
-        doc.select("#cusdf-tilt").node().value = tilt;
-        doc.select("#cusdf-ear").node().value = ear;
-        doc.select("#cusdf-treb").node().value = treble;
     }
 
     doc.select("#cusdf-bass").on("change input", function () {
