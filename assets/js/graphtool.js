@@ -2016,7 +2016,7 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     if (exclusive) {
         activePhones = activePhones.filter(q => q.active = keep(q));
         if (baseline.p && !baseline.p.active) {
-            if (baseline.p.phone != default_DF_name && !dfBaseline) setBaseline(baseline0,1);
+            if (baseline.p.phone != customTiltName && !dfBaseline) setBaseline(baseline0,1);
         }
     }
     if (activePhones.indexOf(p)===-1 && (suppressVariant || !p.objs)) {
@@ -2269,11 +2269,14 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             .data();
         ts.forEach((t,i) => {
             t.id = i-ts.length;
-            if (isInit(t.fileName)) inits.push(t);
+            if (isInit(t.fileName)) {
+                inits.push(t);
+                if (tiltableTargets.includes(t.dispName)) df = t;
+            }
         });
     }
 
-    df = window.brandTarget.phoneObjs.find(p => p.dispName === default_DF_name);
+    if (!df) df = window.brandTarget.phoneObjs.find(p => p.dispName === customTiltName);
     inits.map(p => p.copyOf ? showVariant(p.copyOf, p, initMode)
                             : showPhone(p,0,1, initMode));
     
