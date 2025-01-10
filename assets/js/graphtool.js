@@ -2284,7 +2284,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         normalizePhone(df);
         df.offset=df.offset||0;
         dfBase = getBaseline(df);
-        prepPrefBounds();
     });
 
     // update y scaling
@@ -2472,6 +2471,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         } else {
             boundsBtn.classed("selected", true);
             // set baseline
+            prepPrefBounds();
             setBaseline(dfBase);
             
             // show preference bounds
