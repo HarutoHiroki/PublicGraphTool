@@ -20,6 +20,11 @@ doc.html(`
       <g id="save-icon">
         <path d='M16 11h5l-9 10-9-10h5v-11h8v11zm1 11h-10v2h10v-2z'/>
       </g>
+      <g id="ninety-icon">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M14 10v4a2 2 0 1 0 4 0v-4a2 2 0 1 0 -4 0" />
+        <path d="M6 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-6a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v2a1 1 0 0 0 1 1h3" />
+      </g>
     </defs>
   </svg>
 
@@ -630,7 +635,8 @@ function clearLabels() {
 function drawLabels() {
     let curves = d3.merge(
         activePhones.filter(p=>!p.hide && !p.isPrefBounds).map(p =>
-            p.isTarget||!p.samp||p.avg ? p.activeCurves
+            p.is90Bounds ? [{p:p, o:-1, id:p.fullName, l: p.activeCurves[0].l}]
+            : p.isTarget||!p.samp||p.avg ? p.activeCurves
             : LR.map((l,i) => ({
                 p:p, o:getO(i), id:getChannelName(p)(l), multi:true,
                 l:(n=>p.channels.slice(i*n,(i+1)*n))(sampnums.length)
@@ -1139,6 +1145,7 @@ let channelbox_x = c => c?-86:-36,
     channelbox_tr = c => "translate("+channelbox_x(c)+",0)";
 function setCurves(p, avg, lr, samp) {
     if (avg ===undefined) avg = p.avg;
+    if (p.is90Bounds) avg = false;
     if (samp===undefined) samp = avg ? false : LR.length===1||p.ssamp||false;
     else { p.ssamp = samp; if (samp) avg = false; }
     let dx = +avg - +p.avg,
@@ -1338,6 +1345,26 @@ function updatePhoneTable() {
         .html("<svg viewBox='-170 -120 340 240'><use xlink:href='#baseline-icon'></use></svg>")
         .on("click", p => setBaseline(p===baseline.p ? baseline0
                                                      : getBaseline(p)));
+
+    function showNinetyInclusion(p) {
+        let t = table.selectAll("tr").filter(q=>q===p);
+        t.select(".button-ninety").classed("selected", !t.select(".button-ninety").classed("selected"));
+        if (t.select(".button-ninety").classed("selected")) {
+            // Calculate 90% Confidence Interval
+            // let ch = calculateConfidenceIntervals(p.rawChannels);
+            // Calculate 90% inclusion zone
+            let ch = calculateInclusionWindows(p.rawChannels);
+            let ninetyPercentInclusion = setBoundsPhone(p, ch);
+            showPhone(ninetyPercentInclusion);
+        } else {
+            let ninetyPercentInclusion = activePhones.filter(q=>q.fullName===p.fullName+inclusionName);
+            removePhone(ninetyPercentInclusion[0]);
+        }
+    }
+    f.filter(p=>!p.isTarget && !p.is90Bounds).append("td").attr("class","button button-ninety")
+        .html("<svg width='100' height='100' viewBox='0 0 100 100' stroke-width='1.5'><use xlink:href='#ninety-icon'></use></svg>")
+        .on("click", showNinetyInclusion);
+
     function toggleHide(p) {
         let h = p.hide;
         let t = table.selectAll("tr").filter(q=>q===p);
