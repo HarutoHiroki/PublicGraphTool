@@ -44,7 +44,13 @@ https://graphtool-demo.harutohiroki.com/
   - ability to apply smoothing
 - Trace Arithmetic
 - Realtime Analysis
-- 
+- EQ upload to hardware
+
+# Contributors
+<a href="https://github.com/HarutoHiroki/PublicGraphTool/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=HarutoHiroki/PublicGraphTool&max=15">
+</a>
+
 # For Contributors
 - The code is a mess, I know. I'm working on it. I'm sorry.
 - If you want to contribute and help translate the tool, all the source English text is in the `en.json` file. Just copy the file and rename it to your language code (make sure to use ISO 639-1 Language Codes for auto-detection e.g. `fr.json` for French) and translate the text. I'll take care of the rest.
