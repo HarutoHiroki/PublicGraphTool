@@ -3349,7 +3349,9 @@ function addExtra() {
             }
         };
         reader.readAsText(file);
+
     });
+
     // Export filters
     document.querySelector("div.extra-eq button.export-filters").addEventListener("click", () => {
         let phoneSelected = eqPhoneSelect.value;
@@ -3795,8 +3797,60 @@ function addExtra() {
         }
         updatePaths(true);
     });
+    // Wrap up preamp Calculation Function for plugin
+    let calcEqDevPreamp = () => {
+        const phoneSelected = context.eqPhoneSelect.value;
+        const phoneObj = phoneSelected &&
+            context.activePhones.find(
+                (p) => p.fullName === phoneSelected && p.eq
+            );
+
+        return context.Equalizer.calc_preamp(
+            phoneObj.rawChannels.filter(Boolean)[0],
+            phoneObj.eq.rawChannels.filter(Boolean)[0]
+        );
+    }
+
+    // Load whatever extra plugins we have configured for this instance
+    if (typeof extraEQplugins !== "undefined") {  // In case nothing is added to the config.js
+        loadPlugins(extraEQplugins, {    // Share some useful functions with each of these plugins
+            filtersToElem,  // Needed to populate the PEQ from settings from the device
+            elemToFilters,      // Needed for correct PEQ calculation of gain
+            calcEqDevPreamp,
+            applyEQ
+        });
+    }
 }
 addExtra();
+
+/**
+ * Dynamically load a plugin from a sub-folder passing it the useful context
+ * @param pluginsToLoad
+ * @param context
+ * @returns {Promise<void>}
+ */
+async function loadPlugins(pluginsToLoad, context) {
+    for (const pluginPath of pluginsToLoad) {
+        try {
+            let initializePlugin;
+
+            if (typeof module !== 'undefined' && module.exports) {
+                // CommonJS environment (e.g., Node.js)
+                initializePlugin = require(pluginPath);
+            } else {
+                // ES Module environment (e.g., modern browsers)
+                const module = await import(pluginPath);
+                initializePlugin = module.default;
+            }
+
+            // Call the plugin function with the provided context
+            await initializePlugin(context);
+            console.log(`Successfully loaded plugin: ${pluginPath}`);
+        } catch (error) {
+            console.error(`Error loading plugin ${pluginPath}:`, error.message);
+        }
+    }
+}
 
 // Add accessories to the bottom of the page, if configured
 function addAccessories() {
