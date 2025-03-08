@@ -3811,46 +3811,49 @@ function addExtra() {
         );
     }
 
-    // Load whatever extra plugins we have configured for this instance
-    if (typeof extraEQplugins !== "undefined") {  // In case nothing is added to the config.js
-        loadPlugins(extraEQplugins, {    // Share some useful functions with each of these plugins
-            filtersToElem,  // Needed to populate the PEQ from settings from the device
-            elemToFilters,      // Needed for correct PEQ calculation of gain
-            calcEqDevPreamp,
-            applyEQ
+    /**
+     * Dynamically load a plugin from a sub-folder passing it the useful context
+     * @param pluginsToLoad
+     * @param context
+     * @returns {Promise<void>}
+     */
+    async function loadPlugins(pluginsToLoad, context) {
+        for (const pluginPath of pluginsToLoad) {
+            try {
+                let initializePlugin;
+
+                if (typeof module !== 'undefined' && module.exports) {
+                    // CommonJS environment (e.g., Node.js)
+                    initializePlugin = require(pluginPath);
+                } else {
+                    // ES Module environment (e.g., modern browsers)
+                    const module = await import(pluginPath);
+                    initializePlugin = module.default;
+                }
+
+                // Call the plugin function with the provided context
+                await initializePlugin(context);
+                console.log(`Successfully loaded plugin: ${pluginPath}`);
+            } catch (error) {
+                console.error(`Error loading plugin ${pluginPath}:`, error.message);
+            }
+        }
+    }
+    // Might come from the config.js
+    let config = {showNetwork:false}; // Hide the extra selection of network based devices for now
+
+    // Load the plugin with the provided functions
+    if (typeof extraEQplugins !== "undefined") {
+        loadPlugins(extraEQplugins, {
+            filtersToElem,  // Put Filters back to Html Elements
+            elemToFilters,  // Get Filters from Html Elements
+            calcEqDevPreamp,// Reuse existing gain calculations
+            applyEQ,         // Apply EQ
+            config
         });
     }
 }
 addExtra();
-
-/**
- * Dynamically load a plugin from a sub-folder passing it the useful context
- * @param pluginsToLoad
- * @param context
- * @returns {Promise<void>}
- */
-async function loadPlugins(pluginsToLoad, context) {
-    for (const pluginPath of pluginsToLoad) {
-        try {
-            let initializePlugin;
-
-            if (typeof module !== 'undefined' && module.exports) {
-                // CommonJS environment (e.g., Node.js)
-                initializePlugin = require(pluginPath);
-            } else {
-                // ES Module environment (e.g., modern browsers)
-                const module = await import(pluginPath);
-                initializePlugin = module.default;
-            }
-
-            // Call the plugin function with the provided context
-            await initializePlugin(context);
-            console.log(`Successfully loaded plugin: ${pluginPath}`);
-        } catch (error) {
-            console.error(`Error loading plugin ${pluginPath}:`, error.message);
-        }
-    }
-}
 
 // Add accessories to the bottom of the page, if configured
 function addAccessories() {
