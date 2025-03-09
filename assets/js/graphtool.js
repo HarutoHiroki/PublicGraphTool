@@ -3798,14 +3798,14 @@ function addExtra() {
         updatePaths(true);
     });
     // Wrap up preamp Calculation Function for plugin
-    let calcEqDevPreamp = () => {
-        const phoneSelected = context.eqPhoneSelect.value;
+    let calcEqDevPreamp = (filters) => {
+        const phoneSelected = eqPhoneSelect.value;
         const phoneObj = phoneSelected &&
-            context.activePhones.find(
+            activePhones.find(
                 (p) => p.fullName === phoneSelected && p.eq
             );
 
-        return context.Equalizer.calc_preamp(
+        return Equalizer.calc_preamp(
             phoneObj.rawChannels.filter(Boolean)[0],
             phoneObj.eq.rawChannels.filter(Boolean)[0]
         );
