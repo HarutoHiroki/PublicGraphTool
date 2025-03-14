@@ -1,3 +1,5 @@
+// Original code by Marshall Lochbaum (https://github.com/mlochbaum)
+// Heavily modified by HarutoHiroki (https://harutohiroki.com)
 let doc = d3.select(".graphtool");
 doc.html(`
   <svg style="display: none;">
@@ -294,8 +296,6 @@ doc.html(`
     <div style="display: none" class="extra-eq-overlay">AutoEQ is running, it could take 5~20 seconds or more.</div>
   </main>
 `);
-// Update page translations
-updatePageTranslations();
 
 
 let pad = { l:15, r:15, t:10, b:36 };
@@ -986,7 +986,7 @@ function loadFiles(p, callback) {
                 sampnums.map(n => l(p.fileName+" "+s+n))));
     Promise.all(f).then(function (frs) {
         if (!frs.some(f=>f!==null)) {
-            alert(getAlertMessage("headphoneNotFound"));
+            alert("Headphone not found!");
         } else {
             let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
             ch = ch.filter(c => c !== null); // Remove null elements
@@ -1044,6 +1044,7 @@ let baseline0 = { p:null, l:null, fn:l=>l },
 let gpath = gr.insert("g",".dBScaler")
     .attr("fill","none")
     .attr("stroke-width",2.1)
+    .attr("class", "curves-g")
     .attr("mask","url(#graphFade)");
 function hl(p, h) {
     gpath.selectAll("path").filter(c=>c.p===p).classed("highlight",h);
@@ -1214,7 +1215,6 @@ function setBaseline(b, no_transition) {
     baseline = b;
     updateYCenter();
     if (no_transition) return;
-    //clearLabels();
     gpath.selectAll("path")
         .transition().duration(500).ease(d3.easeQuad)
         .attr("d", drawLine);
@@ -1284,6 +1284,11 @@ function addPhonesToUrl() {
     targetWindow.document.title = title;
     targetWindow.document.querySelector("meta[name='description']").setAttribute("content",baseDescription + ", including " + namesCombined +".");
 }
+
+function setModeEmbed() {
+    document.querySelector("body").setAttribute("embed-mode", "true");
+}
+
 function updatePaths(trigger) {
     clearLabels();
     let c = d3.merge(activePhones.map(p => p.activeCurves)),
@@ -1315,12 +1320,14 @@ let colorBar = p=>'url(\'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/s
 function updatePhoneTable() {
     let c = table.selectAll("tr").data(activePhones.filter(p => !p.isPrefBounds), p=>p.fileName);
     c.exit().remove();
-    let f = c.enter().append("tr"),
+
+    let f = c.enter().append("tr").attr("data-filename", p=>p.fileName),
         td = () => f.append("td");
     f   .call(setHover, h => p => hl(p,h))
         .style("color", p => getDivColor(p.id,true,p.hexColor));
 
     td().attr("class","remove").text("⊗")
+        .attr("title", "Remove graph")
         .on("click", removePhone)
         .style("background-image",colorBar)
         .append("svg").call(addColorPicker); // .filter(p=>!p.isTarget) if you want to exclude target from color picker
@@ -1342,6 +1349,7 @@ function updatePhoneTable() {
     cSel.property("value", p=>p.comp);
     cSel.on("change", function(p) { handleComp(p, this.value); });
     td().attr("class","button button-baseline")
+        .attr("title", "Set as baseline")
         .html("<svg viewBox='-170 -120 340 240'><use xlink:href='#baseline-icon'></use></svg>")
         .on("click", p => setBaseline(p===baseline.p ? baseline0
                                                      : getBaseline(p)));
@@ -1380,9 +1388,11 @@ function updatePhoneTable() {
         }
     }
     td().attr("class","button hideIcon")
+        .attr("title", "Hide graph")
         .html("<svg viewBox='-2.5 0 19 12'><use xlink:href='#hide-icon'></use></svg>")
         .on("click", toggleHide);
     td().attr("class","button button-pin")
+        .attr("title", "Pin graph")
         .attr("data-pinned","false")
         .html("<svg viewBox='-135 -100 270 200'><use xlink:href='#pin-icon'></use></svg>")
         .on("click",function(p){
@@ -1405,6 +1415,7 @@ function updatePhoneTable() {
                     "stroke-linecap":"round",
                     d:"M265 110V25q0 -10 -10 -10H105q-24 0 -48 20l-24 20q-24 20 -2 40l18 15q24 20 42 20h100"
                 });
+            if (!userConfigApplicationActive) setUserConfig();
         });
     if (allowSquigDownload) {
         function saveSquiggle(p) {
@@ -1511,7 +1522,7 @@ function loadPrefBounds(boundsName, callback) {
     let f = LR.map(s =>lpf(boundsName+" "+s))
     Promise.all(f).then(function (frs) {
         if (!frs.some(f=>f!==null)) {
-            alert(getAlertMessage("boundsNotFound"));
+            alert("Bounds not found!");
         } else {
             let ch = frs.map(f => f && Equalizer.interp(f_values, tsvParse(f)));
             ch = ch.filter(c => c !== null); // Remove null elements
@@ -1687,7 +1698,9 @@ function addModel(t) {
                     return j!==-1 ? o[j] :
                         {fileName:f, dispName:q.dispNames[i]};
                 });
-            let d = n.selectAll().data(vars).join("div")
+            let nVariantNames = n.append("div").attr("class","variant-names");
+            let nVariantPopouts = n.append("div").attr("class","variant-popouts");
+            let d = nVariantNames.selectAll().data(vars).join("div")
                      .attr("class","variantName").text(v=>v.dispName),
                 w = d3.max(d.nodes(), d=>d.getBoundingClientRect().width);
             d.style("width",w+"px");
@@ -1698,7 +1711,7 @@ function addModel(t) {
                     table.selectAll("tr").filter(q=>q===p)
                         .classed("highlight", h)
                 );
-            let c = n.selectAll().data(vars).join("span")
+            let c = nVariantPopouts.selectAll().data(vars).join("span")
                 .html("&nbsp;+&nbsp;").attr("class","variantPopout")
                 .style("left",(w+5)+"px")
                 .style("display",v=>v.active?"none":null);
@@ -1964,7 +1977,13 @@ function setNorm(_, i, change) {
     activePhones.forEach(normalizePhone);
     if (baseline.p) { baseline = getBaseline(baseline.p); }
     updateYCenter();
-    updatePaths();
+    
+    if (!userConfigApplicationActive) {
+        setUserConfig();
+        updatePaths();
+    } else {
+        updatePaths("config");
+    }
 }
 norms.select("input")
     .on("change input",setNorm)
@@ -2089,6 +2108,12 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
     if (extraEnabled && extraEQEnabled) {
         updateEQPhoneSelect();
     }
+    if (!p.isTarget && alt_augment ) { augmentList(p); }
+    
+    // Apply user config view settings
+    if (typeof trigger !== "undefined") {
+        userConfigApplyViewSettings(p.fileName);
+    }
 }
 
 function removeCopies(p) {
@@ -2166,6 +2191,12 @@ function asPhoneObj(b, p, isInit, inits) {
     }
     r.dispName = r.dispName || r.phone;
     r.fullName = r.dispBrand + " " + r.phone;
+    if (alt_augment) {
+        r.reviewScore = p.reviewScore;
+        r.reviewLink = p.reviewLink;
+        r.shopLink = p.shopLink;
+        r.price = p.price;
+    }
     return r;
 }
 
@@ -2173,7 +2204,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
             : DIR+"phone_book.json?"+ new Date().getTime()).then(function (brands) {
     let brandMap = window.brandMap = {},
         inits = [],
-        initReq = typeof init_phones !== "undefined" ? init_phones : false;
+        initReq = typeof init_phones !== "undefined" ? [init_phones].flat() : false;
     loadFromShare = 0;
     
     if (ifURL) {
@@ -2189,13 +2220,15 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         let str = match && match[1] ? match[1].replace("share=", "") : null;
         let cTiltParams = decodeURIComponent(url.replace(/_/g," ")).match(/bass=([^&]+)&tilt=([^&]+)&treble=([^&]+)&ear=([^&]+)/);
         if (url.includes(par) && url.includes(emb)) {
-            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
             initReq = str.split(",");
             loadFromShare = 2;
+            
+            setModeEmbed();
         } else if (url.includes(par)) {
-            //initReq = decodeURIComponent(url.replace(/_/g," ").split(par).pop()).split(",");
             initReq = str.split(",");
             loadFromShare = 1;
+        } else if (url.includes(emb)) {
+            setModeEmbed();
         }
 
         if (url.includes(cDFb)) {
@@ -2213,9 +2246,11 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         if (url.includes(cDFe)) {
             ear = parseFloat(cTiltParams[4]);
         }
-
-
     }
+    
+    // Apply user config to inits
+    userConfigAppendInits(initReq);
+    
     let isInit = initReq ? f => initReq.indexOf(f) !== -1
                          : _ => false;
     
@@ -2343,7 +2378,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         // check if user is trying to tilt non tiltable targets
         let activeTarget = activePhones.filter(p => p.isTarget)[0];
         if (activeTarget.isTarget && !tiltableTargets.includes(activeTarget.dispName) && activeTarget.phone != "Custom Tilt") {
-            return alert(getAlertMessage("customTiltNotSupported"));
+            return alert("This target is not supported for Custom Tilt");
         }
         // Bass Shelf
         let filters = [
@@ -2546,7 +2581,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         allPhones,
         {
             shouldSort: false,
-            tokenize: true,
+            tokenize: false,
             threshold: 0.2,
             minMatchCharLength: 2,
             keys: [
@@ -2560,7 +2595,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         brands,
         {
             shouldSort: false,
-            tokenize: true,
+            tokenize: false,
             threshold: 0.05,
             minMatchCharLength: 3,
             keys: [
@@ -2605,6 +2640,8 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     doc.select("#theme").on("click", function () {
         themeChooser("change");
     });
+    
+    userConfigApplyNormalization();
 });
 
 let pathHoverTimeout;
@@ -2721,7 +2758,8 @@ gr.append("rect")
     .on("click", graphInteract(true));
 
 doc.select("#inspector").on("click", function () {
-    clearLabels(); stopInspect();
+    clearLabels();
+    stopInspect();
     d3.select(this).classed("selected", interactInspect = !interactInspect);
 });
 
@@ -2767,29 +2805,48 @@ copyUrlInit();
 // Theme Chooser
 function themeChooser(command) {
     let docBody = document.querySelector("body"),
-        darkClass = "dark-mode",
-        darkModePref = localStorage.getItem("dark-mode-pref");
+        themeButton = document.querySelector("button#theme"),
+        themeCurrent = themeButton.getAttribute("current-theme");
     
-    if ( darkModePref ) {
-        if ( command === "change") {
-            localStorage.removeItem("dark-mode-pref");
-            docBody.classList.remove(darkClass);
+    // If a change event, make changes to state
+    if (command === "change") {
+        if (themeCurrent === "theme-dark") {
+            localStorage.setItem("theme-pref", "theme-contrast");
+        } else if (themeCurrent === "theme-contrast") {
+            localStorage.setItem("theme-pref", "theme-default");
         } else {
-            docBody.classList.add(darkClass);
-        }
-    } else {
-        if ( command === "change" ) {
-            localStorage.setItem("dark-mode-pref", "true");
-            docBody.classList.add(darkClass);
+            localStorage.setItem("theme-pref", "theme-dark");
         }
     }
+    
+    let themePref = localStorage.getItem("theme-pref");
+    
+    // Apply state
+    if (themePref === "theme-dark") {
+        docBody.classList.remove("theme-default", "theme-contrast");
+        docBody.classList.add("theme-dark");
+        themeButton.textContent = "contrast mode";
+        
+    } else if (themePref === "theme-contrast") {
+        docBody.classList.remove("theme-default", "theme-dark");
+        docBody.classList.add("theme-contrast");
+        themeButton.textContent = "default mode";
+        
+    } else {
+        docBody.classList.remove("theme-dark", "theme-contrast");
+        docBody.classList.add("theme-default");
+        themeButton.textContent = "dark mode";
+    }
+    
+    themeButton.setAttribute("current-theme", themePref);
 }
-if ( darkModeButton ) {
+if ( themingEnabled ) {
     let themeButton = document.createElement("button"),
         miscTools = document.querySelector("div.miscTools");
         
     themeButton.setAttribute("id", "theme");
     themeButton.textContent = "dark mode";
+    themeButton.setAttribute("current-theme", "theme-default");
     miscTools.append(themeButton);
     
     themeChooser();
@@ -3017,6 +3074,7 @@ function addExtra() {
         document.querySelector("div.select > div.selector-panel").style["display"] = "none";
         document.querySelector("div.select > div.extra-panel").style["display"] = "flex";
         document.querySelector("div.select").setAttribute("data-selected", "extra");
+        if (analyticsEnabled) { pushEventTag("clicked_equalizerTab", targetWindow); }
     };
     window.hideExtraPanel = (selectedList) => {
         document.querySelector("div.select > div.selector-panel").style["display"] = "flex";
@@ -3071,7 +3129,7 @@ function addExtra() {
             let phone = { name: name };
             let ch = [tsvParse(e.target.result)];
             if (ch[0].length < 32) {
-                alert(getAlertMessage("parseFRFailed"));
+                alert("Parse frequence response file failed: invalid format.");
                 return;
             }
             ch[0] = Equalizer.interp(f_values, ch[0]);
@@ -3083,7 +3141,7 @@ function addExtra() {
                 let fullName = name + (name.match(/ Target$/i) ? "" : " Target");
                 let existsTargets = targets.reduce((a, b) => a.concat(b.files), []).map(f => f += " Target");
                 if (existsTargets.indexOf(fullName) >= 0) {
-                    alert(getAlertMessage("targetAlreadyExists"));
+                    alert("This target already exists on this tool, please select it instead of upload.");
                     return;
                 }
                 let phoneObj = {
@@ -3292,7 +3350,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
-            alert(getAlertMessage("noFiltersSelectedForSave"));
+            alert("Please select model and add at least one filter before saving.");
             return;
         }
 
@@ -3345,7 +3403,7 @@ function addExtra() {
                 filtersToElem(filters);
                 applyEQ();
             } else {
-                alert(getAlertMessage("parseFiltersFailed"));
+                alert("Parse filters file failed: no filter found.");
             }
         };
         reader.readAsText(file);
@@ -3357,7 +3415,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0];
         let filters = elemToFilters(true);
         if (!phoneObj || !filters.length) {
-            alert(getAlertMessage("noFiltersSelectedForExport"));
+            alert("Please select model and add atleast one filter before export.");
             return;
         }
         let preamp = Equalizer.calc_preamp(
@@ -3388,7 +3446,7 @@ function addExtra() {
             p => !p.isPrefBounds && p.brand.name + " " + p.dispName == phoneSelected && p.eq)[0] || { fullName: "Unnamed" };
         let filters = elemToFilters();
         if (!filters.length) {
-            alert(getAlertMessage("noFiltersSelectedForExport"));
+            alert("Please add atleast one filter before export.");
             return;
         }
         let graphicEQ = Equalizer.as_graphic_eq(filters);
@@ -3402,7 +3460,11 @@ function addExtra() {
     });
     // Readme
     document.querySelector("div.extra-eq button.readme").addEventListener("click", () => {
-        alert(getAlertMessage("equalizerReadMe").join("\n"));
+        alert("1. If you want to AutoEQ model A to B, display A B and remove target\n" +
+            "2. Add/Remove bands before AutoEQ may give you a better result\n" +
+            "3. Curve of PK filter close to 20K is implementation dependent, avoid such filter if you're not sure how your DSP software works\n" +
+            "4. EQ treble require resonant peak matching and fine tune by ear, keep treble untouched if you're not sure how to do that\n" +
+            "5. Tone generator is useful to find actual location of peaks and dips, notice the web version may not work on some platform\n");
     });
     // AutoEQ
     let autoEQFromInput = document.querySelector("div.extra-eq input[name='autoeq-from']");
@@ -3431,7 +3493,7 @@ function addExtra() {
         let targetObj = (activePhones.filter(p => p.isTarget)[0] ||
             activePhones.filter(p => p !== phoneObj && !p.isTarget)[0]);
         if (!phoneObj || !targetObj) {
-            alert(getAlertMessage("autoEQFilterAlert"));
+            alert("Please select model and target, if there are no target and multiple models are displayed then the second one will be selected as target.");
             return;
         }
         let autoEQOverlay = document.querySelector(".extra-eq-overlay");
@@ -3490,7 +3552,7 @@ function addExtra() {
     //* ---------- Audio Context ---------- *//
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (!audioContext) {
-        alert(getAlertMessage("webAudioNotSupported"));
+        alert("Web audio api is disabled, please enable it if you want to use EQ testing functions.");
         return;
     }
 
@@ -3674,7 +3736,7 @@ function addExtra() {
                     break;
                 case "custom-eq-track":
                     if (!uploadedAudio || !uploadedSource) {
-                        alert(getAlertMessage("noAudioUploaded"));
+                        alert("Please upload an audio file first.");
                         eqTrack.value = "pink";
                         currentAudio = pinkNoiseAudio;
                         currentSource = pinkNoiseSource;
@@ -3821,18 +3883,16 @@ function addHeader() {
     
     headerButton.className = "header-button";
     headerLogoElem.className = "logo";
-    headerLogoElem.setAttribute('style', "margin-right: 0;");
     headerLogoLink.setAttribute('href', site_url);
-    headerLogoLink.setAttribute('style', "display:inline-flex; align-items:center; white-space:nowrap;");
-    headerLogoSpan.innerText = headerLogoText;
-    headerLogoSpan.setAttribute('style', "color: #ffffff; margin-right:10px");
-    headerLogoLink.append(headerLogoSpan);
-    headerLogoImg.setAttribute("src", headerLogoImgUrl);
-    headerLogoImg.setAttribute('style', "width:auto; height: 24px; fill: #ffffff;");
-    headerLogoLink.append(headerLogoImg);
+    if (headerLogoText) {
+        headerLogoSpan.innerText = headerLogoText;
+        headerLogoLink.append(headerLogoSpan);
+    } else if (headerLogoImgUrl) {
+        headerLogoImg.setAttribute("src", headerLogoImgUrl);
+        headerLogoLink.append(headerLogoImg);
+    }
     
     altHeaderElem.append(headerButton);
-    headerButton.setAttribute('style', "background-color: #ffffff");
     headerLogoElem.append(headerLogoLink);
     altHeaderElem.setAttribute("data-links", "");
     altHeaderElem.append(headerLogoElem);
@@ -3849,24 +3909,23 @@ function addHeader() {
                 linkElem = document.createElement("a");
             
             linkElem.setAttribute("href", link.url);
-            linkElem.setAttribute("target", "_blank");
-            linkElem.setAttribute('style', "color: #ffffff");
+            if ( alt_header_new_tab ) { linkElem.setAttribute("target", "_blank"); }
+            if ( link.external ) { linkElem.setAttribute("target", "_blank"); linkElem.classList.add('external'); }
             linkElem.textContent = link.name;
             linkContainerElem.append(linkElem);
             linksList.append(linkContainerElem);
-        }
-    )}
+        })
+    }
 
     if (allowCreatorSupport) {
         // custom Ko-fi button
-        const scriptHtml = `<a href='https://ko-fi.com/harutohiroki' target='_blank' style="margin-right: 10px"><img height='333' style='border:0px; height:33px;'
+        const scriptHtml = `<a href='https://ko-fi.com/harutohiroki' target='_blank' style="margin-top: auto; margin-bottom: auto; margin-right: 10px"><img height='333' style='border:0px; height:33px;'
                             src='https://storage.ko-fi.com/cdn/kofi5.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>`;
         altHeaderElem.insertAdjacentHTML('beforeend', scriptHtml);
     }
     
     headerButton.addEventListener("click", function() {
         let headerLinksState = altHeaderElem.getAttribute("data-links");
-        linksList.setAttribute('style', "background-color: #000000");
         
         if (headerLinksState === "expanded") {
             altHeaderElem.setAttribute("data-links", "collapsed");
@@ -4235,3 +4294,121 @@ function toggleExpandCollapse() {
 }
 
 if ( expandable && accessDocumentTop ) { toggleExpandCollapse(); }
+
+// Update user config for target + baseline
+function setUserConfig() {
+    let urlObj = new URL(document.URL),
+        pathClean = urlObj.pathname.replace(/\W/g, ""),
+        configName = pathClean.length > 0 ? "_" + pathClean + "_a" : "_a",
+        configJson = {
+            "phones": [],
+            "normalMode": (norm_sel === 1) ? "Hz" : "dB",
+            "normalValue": (norm_sel === 1) ? norm_fr : norm_phon
+        },
+        activeBaseline = baseline.p ? baseline.p.fileName : 0;
+    
+    activePhones.forEach(function(phone) {
+        let phoneJson = {},
+            fullName = phone.fullName,
+            fileName = phone.fileName,
+            isTarget = phone.isTarget ? phone.isTarget : false,
+            isHidden = phone.hide ? phone.hide : false,
+            isBaseline = fileName === activeBaseline ? true : false,
+            isPinned = phone.pin ? phone.pin : false;
+        
+        if (isTarget || isBaseline) {
+            phoneJson.fullName = fullName;
+            phoneJson.fileName = fileName;
+            phoneJson.isTarget = isTarget;
+            phoneJson.isHidden = isHidden;
+            phoneJson.isBaseline = isBaseline;
+            phoneJson.isPinned = isPinned;
+            
+            configJson.phones.push(phoneJson);
+        }
+    });
+    
+    localStorage.setItem("userConfig" + configName, JSON.stringify(configJson));
+}
+
+// Insert user config phones to inits
+function userConfigAppendInits(initReq) {
+    if (targetRestoreLastUsed) {
+        let urlObj = new URL(document.URL),
+            pathClean = urlObj.pathname.replace(/\W/g, ""),
+            configName = pathClean.length > 0 ? "_" + pathClean + "_a" : "_a",
+            configJson = JSON.parse(localStorage.getItem("userConfig" + configName)),
+            configNumOfPhones = configJson ? configJson.phones.length : 0;
+
+        if (configJson && configNumOfPhones) {
+            initReq.slice(0).forEach(function(item) {
+                if (item.endsWith(' Target')) {
+                    initReq.splice(initReq.indexOf(item), 1);
+                }
+            });
+
+            configJson.phones.forEach(function(phone) {
+                if (!initReq.includes(phone.fileName)) {
+                    initReq.push(phone.fileName);
+                }
+            });
+        }
+    }
+}
+
+// Apply baseline and hide settings
+function userConfigApplyViewSettings(phoneInTable) {
+    if (targetRestoreLastUsed) {
+        userConfigApplicationActive = 1;
+
+        let urlObj = new URL(document.URL),
+            pathClean = urlObj.pathname.replace(/\W/g, ""),
+            configName = pathClean.length > 0 ? "_" + pathClean + "_a" : "_a",
+            configJson = JSON.parse(localStorage.getItem("userConfig" + configName));
+
+        if (configJson) {
+            let phone = configJson.phones.find(item => item.fileName === phoneInTable);
+
+            if (typeof phone !== "undefined") {
+                let row = document.querySelector("tr[data-filename='"+ phone.fileName +"']"),
+                    hideButton  = row.querySelector("td.hideIcon"),
+                    baselineButton  = row.querySelector("td.button-baseline"),
+                    pinButton = row.querySelector("td.button-pin");
+
+                if (phone.isHidden && !hideButton.classList.contains("selected")) {
+                    hideButton.click();
+                }
+
+                if (phone.isBaseline && !baselineButton.classList.contains("selected")) {
+                    baselineButton.click();
+                }
+
+                if (phone.isPinned && pinButton.getAttribute('data-pinned') !== "true") {
+                    pinButton.click();
+                }
+            }
+        }
+
+        userConfigApplicationActive = 0;
+    }
+};
+
+// Apply normalization config
+function userConfigApplyNormalization() {
+    userConfigApplicationActive = 1;
+    
+    let urlObj = new URL(document.URL),
+        pathClean = urlObj.pathname.replace(/\W/g, ""),
+        configName = pathClean.length > 0 ? "_" + pathClean + "_a" : "_a",
+        configJson = JSON.parse(localStorage.getItem("userConfig" + configName));
+    
+    if ( configJson && configJson.normalMode === "Hz" ) {
+        document.querySelector("input#norm-fr").value = configJson.normalValue;
+        document.querySelector("input#norm-fr").dispatchEvent(new Event("change"));
+    } else if ( configJson && configJson.normalMode === "dB" ) {
+        document.querySelector("input#norm-phon").value = configJson.normalValue;
+        document.querySelector("input#norm-phon").dispatchEvent(new Event("change"));
+    }
+    
+    userConfigApplicationActive = 0;
+}

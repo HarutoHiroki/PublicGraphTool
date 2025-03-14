@@ -44,6 +44,7 @@ Icons *****/
     --icon-hide: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23000000;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M60,30C32.39,30,10,43.43,10,60S32.39,90,60,90s50-13.43,50-30S87.61,30,60,30ZM90.21,72.64C82.41,77.32,71.4,80,60,80,37.11,80,20,69.44,20,60c0-4.3,3.57-8.91,9.79-12.64C37.59,42.68,48.6,40,60,40c22.89,0,40,10.56,40,20C100,64.3,96.43,68.91,90.21,72.64Z'/%3E%3Ccircle class='cls-1' cx='60' cy='60' r='10'/%3E%3C/svg%3E");
     --icon-pin: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23000000;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M78.07,30.48A28.68,28.68,0,0,1,89.52,41.93l-2.33-.64L83.49,45,69.05,59.43l-4.78,4.78,3.27,5.93c2.61,4.74,2.9,7.76,2.79,8.93a3,3,0,0,1-.45,0c-2.64,0-7.89-1.7-14-6.48l-4.75-3.74-3.74-4.75c-5.55-7.09-6.65-12.6-6.48-14.45l.46,0c1,0,3.89.28,8.49,2.81l5.93,3.27L60.57,51,75,36.51l3.71-3.7-.64-2.33M74.41,20.27A6.34,6.34,0,0,0,69.77,22c-1.79,1.79-2.08,4.76-1.13,8.2L54.21,44.58C49.57,42,45.1,40.65,41.37,40.65a9.54,9.54,0,0,0-7,2.51c-5,5-2.27,16.09,5.9,26.51L23,95.58a1,1,0,0,0,.83,1.55,1,1,0,0,0,.55-.17L50.33,79.69c6.87,5.38,14,8.4,19.55,8.4a9.52,9.52,0,0,0,7-2.5c3.93-3.93,3.08-11.62-1.42-19.8L89.85,51.36a13.62,13.62,0,0,0,3.58.53,6.32,6.32,0,0,0,4.62-1.66C102,46.32,98.79,36.83,91,29c-5.54-5.54-11.93-8.75-16.57-8.75Z'/%3E%3C/svg%3E");
     --icon-plus: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23000000;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M110,60h0a5,5,0,0,0-5-5H65V15a5,5,0,0,0-5-5h0a5,5,0,0,0-5,5V55H15a5,5,0,0,0-5,5h0a5,5,0,0,0,5,5H55v40a5,5,0,0,0,5,5h0a5,5,0,0,0,5-5V65h40A5,5,0,0,0,110,60Z'/%3E%3C/svg%3E");
+    --icon-new-tab: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3Cstyle%3E.cls-1,.cls-2%7Bfill:none;stroke:%23231f20;%7D.cls-2%7Bstroke-linecap:round;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M21,11v2c0,3.77,0,5.66-1.17,6.83S16.77,21,13,21H11c-3.77,0-5.66,0-6.83-1.17S3,16.77,3,13V11C3,7.23,3,5.34,4.17,4.17S7.23,3,11,3h1'/%3E%3Cpath class='cls-2' d='M21,3.15H16.76m4.24,0V7.39m0-4.24-8.49,8.48'/%3E%3C/svg%3E");
     
     --icon-expand: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23252627;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M24.64,95.36l24.75-3.54-7.07-7.07,3.54-3.54a5,5,0,0,0,0-7.07h0a5,5,0,0,0-7.07,0l-3.54,3.54-7.07-7.07Z'/%3E%3Cpath class='cls-1' d='M95.36,24.64,70.61,28.18l7.07,7.07-3.54,3.54a5,5,0,0,0,0,7.07h0a5,5,0,0,0,7.07,0l3.54-3.54,7.07,7.07Z'/%3E%3Cpath class='cls-1' d='M42.32,35.25l7.07-7.07L24.64,24.64l3.54,24.75,7.07-7.07,3.54,3.54a5,5,0,0,0,7.07,0h0a5,5,0,0,0,0-7.07Z'/%3E%3Cpath class='cls-1' d='M95.36,95.36,91.82,70.61l-7.07,7.07-3.54-3.54a5,5,0,0,0-7.07,0h0a5,5,0,0,0,0,7.07l3.54,3.54-7.07,7.07Z'/%3E%3C/svg%3E");
     --icon-collapse: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23252627;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M52.93,67.07,28.18,70.61l7.07,7.07-3.53,3.53a5,5,0,0,0,0,7.07h0a5,5,0,0,0,7.07,0l3.53-3.53,7.07,7.07Z'/%3E%3Cpath class='cls-1' d='M67.07,52.93l24.75-3.54-7.07-7.07,3.53-3.53a5,5,0,0,0,0-7.07h0a5,5,0,0,0-7.07,0l-3.53,3.53-7.07-7.07Z'/%3E%3C/svg%3E");
@@ -149,8 +150,16 @@ g.dBScaler rect[fill="#bbb"] {
     fill: var(--background-color-graph);
 }
 
+svg#fr-graph > g > image {
+    filter: var(--svg-filter);
+}
+
 svg#fr-graph rect {
     pointer-events: all;
+}
+
+g.inspector rect {
+    pointer-events: none !important;
 }
 
 text.insp_dB {
@@ -275,8 +284,6 @@ svg#fr-graph[data-labels-position="bottom-right"] > rect + g.lineLabel:nth-last-
     transform: translate(500px, 208px);
 }
 
-
-
 /*****
 Framing *****/
 
@@ -324,12 +331,11 @@ Alt header *****/
 
 header.header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     
     box-sizing: border-box;
-    flex: 48px 0 0;
     
-    background-color: #000000;
+    background-color: var(--header-color);
 }
 
 button.header-button {
@@ -342,7 +348,7 @@ div.logo {
     align-items: center;
     
     box-sizing: border-box;
-    flex: 200px 0 0;
+    flex: 350px 0 0;
     height: 48px;
     padding: 12px 0;
     overflow: hidden;
@@ -388,6 +394,8 @@ ul.header-links {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0 32px;
     
     box-sizing: border-box;
     flex: 100% 0 1;
@@ -431,6 +439,27 @@ ul.header-links a {
     line-height: 1em;
     text-decoration-color: var(--background-color-contrast-more);
     text-decoration: none;
+}
+
+ul.header-links a.external {
+    padding-right: 20px;
+}
+
+ul.header-links a.external:after {
+    content: '';
+    display: block;
+    flex: 16px 0 0;
+    height: 16px;
+    margin: 0 0 0 4px;
+    background-color: currentColor;
+    mask: var(--icon-new-tab);
+    -webkit-mask: var(--icon-new-tab);
+    mask-size: 14px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: 14px;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
 }
 
 
@@ -1399,6 +1428,7 @@ tbody.curves > tr > td.item-line div.variantName {
     position: relative;
     top: auto !important;
     
+    width: auto !important;
     flex: calc(100% - 52px) 0 0;
     height: 50px;
     
@@ -1639,6 +1669,28 @@ tbody.curves > tr > td.item-line span.variantPopout:nth-of-type(20) {
     order: 40;
 }
 
+/* Styles for variantName + variantPopout layout */
+div.variant-names {
+    flex: auto 1 1;
+    max-width: calc(100% - 40px);
+}
+
+div.variant-popouts {
+    flex: 36px 0 0;
+    padding: 7px 0 0 0;
+    padding: 0;
+}
+
+span.variantPopout {
+    margin: 0 0 14px 0;
+    display: flex !important;
+}
+
+span.variantPopout[style*="display: none;"] {
+    opacity: 0.0;
+}
+
+/* -- */
 tbody.curves > tr > td.item-line div.variants {
     position: relative;
     
@@ -1931,6 +1983,8 @@ div.scroll {
     
     overflow-y: auto;
     overflow-x: hidden;
+    
+    scroll-behavior: smooth;
 }
 
 /* List selected styles */
@@ -1978,7 +2032,7 @@ div.scroll > div {
     position: relative;
     
     box-sizing: border-box;
-    height: 36px;
+    min-height: 36px;
     padding: 11px 12px;
     overflow: hidden;
     
@@ -3052,29 +3106,10 @@ Responsive styles *****/
     /*****
     Alt header mobile *****/
 
-    header.header:before {
-        position: absolute;
-        top: 6px;
-        left: 6px;
-
-        content: '';
-        box-sizing: border-box;
-        display: block;
-        width: 36px;
-        height: 36px;
-
-        background-color: var(--background-color);
-        border: 1px solid var(--background-color-contrast-more);
-        border-radius: 6px;
-        cursor: pointer;
-        display: none;
-    }
-
     button.header-button {
-        content: '';
         box-sizing: border-box;
         display: block;
-        width: 36px;
+        flex: 36px 0 0;
         height: 36px;
         margin: 0 0 0 6px;
 
@@ -3203,6 +3238,7 @@ Responsive styles *****/
         display: flex;
         
         flex: 50% 1 1;
+        height: calc(100% - 52px);
     }
     
     div.scroll {
@@ -3305,4 +3341,47 @@ Responsive styles *****/
         
         pointer-events: none;
     }
+}
+
+/*****
+Embed mode *****/
+body[embed-mode="true"] header.header {
+    display: none;
+}
+
+body[embed-mode="true"] section.parts-primary {
+    z-index: 3;
+
+    flex: 100vh 1 1 !important;
+    max-height: -webkit-fill-available;
+}
+
+body[embed-mode="true"] section.parts-secondary {
+    display: none;
+}
+
+body[embed-mode="true"] div.graph-sizer {
+    position: fixed;
+    z-index: 5;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-sizing: border-box;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: -webkit-fill-available;
+    margin: 0;
+
+    background-color: var(--background-color);
+}
+
+body[embed-mode="true"] svg#fr-graph {
+    width: 100%;
+
+    pointer-events: none;
 }

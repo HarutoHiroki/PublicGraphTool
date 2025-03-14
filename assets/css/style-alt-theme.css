@@ -20,12 +20,16 @@
     
     --scrollbar-color: 255,255,255;
     --scrollbar-accent: 0,0,0;
-        
+    
+    --header-color: hsl(215, 20%, 10%);
+    --header-links-color: hsl(0, 0%, 100%);
+    --header-menu-icon-color: hsl(0, 0%, 100%);
+    
     --logo-filter: invert(1.0);
     --svg-filter: none;
 }
 
-body.dark-mode {
+body.theme-dark {
     --accent-color: hsl(0, 0%, 100%);
     --accent-color-contrast: hsl(0, 0%, 50%);
 
@@ -46,6 +50,60 @@ body.dark-mode {
     --scrollbar-color: 0,0,0;
     --scrollbar-accent: 255,255,255;
 
+    --header-color: hsl(0, 0%, 0%);
+    --header-links-color: hsl(0, 0%, 100%);
+    --header-menu-icon-color: hsl(0, 0%, 100%);
+    
     --logo-filter: invert(1.0);
-    --svg-filter: invert(1.0);
+    --svg-filter: invert(1);
+}
+
+body.theme-contrast {
+    --accent-color: hsl(0, 0%, 0%);
+    --accent-color-contrast: hsl(0, 0%, 0%);
+
+    --background-color: hsl(0, 0%, 100%);
+    --background-color-contrast: hsl(0, 0%, 0%);
+    --background-color-contrast-more: hsl(0, 0%, 0%);
+    --background-color-graph: hsl(0, 0%, 100%);
+    
+    --background-color-inputs: hsl(0, 0%, 100%);
+    
+    --font-color-primary: hsl(0, 0%, 0%);
+    --font-color-secondary: hsl(0, 0%, 100%);
+    --font-color-inputs: hsl(0, 0%, 0%);
+    
+    --font-primary: 'Open Sans', sans-serif;
+    --font-secondary: monospace;
+    
+    --scrollbar-color: 255,255,255;
+    --scrollbar-accent: 0,0,0;
+    
+    --header-color: hsl(215, 20%, 10%);
+    --header-links-color: hsl(0, 0%, 100%);
+    --header-menu-icon-color: hsl(0, 0%, 100%);
+    
+    --logo-filter: invert(1.0);
+    --svg-filter: none;
+}
+
+/***** Squiglink site address *****/
+
+image.wm-squiglink-logo {
+}
+
+text.wm-squiglink-address {
+    color: var(--font-color-primary);
+    color: magenta;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    font-size: 14px;
+    
+    filter: var(--svg-filter);
+}
+
+g.curves-g path.target + path.target {
+    stroke-dasharray: 20, 10 !important;
+    stroke-width: 2.5;
+    opacity: 0.4;
 }
