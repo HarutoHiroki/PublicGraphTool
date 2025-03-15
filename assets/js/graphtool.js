@@ -4012,27 +4012,6 @@ function addHeader() {
             altHeaderElem.setAttribute("data-links", "expanded");
         }
     });
-
-    if (allowLanguageSelector) {
-        const headerLangSelector = document.createElement('select');
-        headerLangSelector.className = "language-selector";
-
-        availableLanguages.forEach(lang => {
-            const langOption = document.createElement("option");
-            langOption.value = lang;
-            langOption.textContent = lang.toUpperCase();
-            headerLangSelector.appendChild(langOption);
-        });
-    
-        headerLangSelector.value = currentLanguage;
-        headerLangSelector.addEventListener("change", (e) => {
-            currentLanguage = e.target.value;
-            loadTranslations(currentLanguage);
-        });
-        
-        // Add the selector to your header or toolbar
-        altHeaderElem.append(headerLangSelector);
-    }
 }
 if (alt_layout && alt_header) { addHeader(); }
 
