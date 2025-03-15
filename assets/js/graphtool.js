@@ -3349,7 +3349,9 @@ function addExtra() {
             }
         };
         reader.readAsText(file);
+
     });
+
     // Export filters
     document.querySelector("div.extra-eq button.export-filters").addEventListener("click", () => {
         let phoneSelected = eqPhoneSelect.value;
@@ -3795,6 +3797,61 @@ function addExtra() {
         }
         updatePaths(true);
     });
+    // Wrap up preamp Calculation Function for plugin
+    let calcEqDevPreamp = (filters) => {
+        const phoneSelected = eqPhoneSelect.value;
+        const phoneObj = phoneSelected &&
+            activePhones.find(
+                (p) => p.fullName === phoneSelected && p.eq
+            );
+
+        return Equalizer.calc_preamp(
+            phoneObj.rawChannels.filter(Boolean)[0],
+            phoneObj.eq.rawChannels.filter(Boolean)[0]
+        );
+    }
+
+    /**
+     * Dynamically load a plugin from a sub-folder passing it the useful context
+     * @param pluginsToLoad
+     * @param context
+     * @returns {Promise<void>}
+     */
+    async function loadPlugins(pluginsToLoad, context) {
+        for (const pluginPath of pluginsToLoad) {
+            try {
+                let initializePlugin;
+
+                if (typeof module !== 'undefined' && module.exports) {
+                    // CommonJS environment (e.g., Node.js)
+                    initializePlugin = require(pluginPath);
+                } else {
+                    // ES Module environment (e.g., modern browsers)
+                    const module = await import(pluginPath);
+                    initializePlugin = module.default;
+                }
+
+                // Call the plugin function with the provided context
+                await initializePlugin(context);
+                console.log(`Successfully loaded plugin: ${pluginPath}`);
+            } catch (error) {
+                console.error(`Error loading plugin ${pluginPath}:`, error.message);
+            }
+        }
+    }
+    // Might come from the config.js
+    let config = {showNetwork:false}; // Hide the extra selection of network based devices for now
+
+    // Load the plugin with the provided functions
+    if (typeof extraEQplugins !== "undefined") {
+        loadPlugins(extraEQplugins, {
+            filtersToElem,  // Put Filters back to Html Elements
+            elemToFilters,  // Get Filters from Html Elements
+            calcEqDevPreamp,// Reuse existing gain calculations
+            applyEQ,         // Apply EQ
+            config
+        });
+    }
 }
 addExtra();
 
