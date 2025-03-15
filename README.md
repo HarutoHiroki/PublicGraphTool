@@ -34,7 +34,7 @@ https://graphtool-demo.harutohiroki.com/
 - Downloadable CSV of all active graphs
 - Per page Y scaling (requested by listener)
 - Added a Graph Customisation menu
-- Added Translations (Thanks to potatosalad775)
+- Added Translations (Thanks to potatosalad775) (removed for now due to not having enough translations, will be added back soon)
 - Added the 90% Inclusion Zone feature (requested and long awaited by the community)
 
 # TODO
