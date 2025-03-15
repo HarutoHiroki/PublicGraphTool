@@ -296,3 +296,8 @@ let tutorialDefinitions = [
         description: 'The Treble range is composed entirely of harmonics and is responsible for sparkle and air of a sound. Over boosting in this region can accentuate hiss and cause ear fatigue.'
     }
 ]
+
+// Configure paths to extraEQ plugins here
+let extraEQplugins = [
+    './devicePEQ/plugin.js' // Path to one or more "extraEQ" plugins
+];
