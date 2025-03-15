@@ -1353,9 +1353,30 @@ function updatePhoneTable() {
             // Calculate 90% Confidence Interval
             // let ch = calculateConfidenceIntervals(p.rawChannels);
             // Calculate 90% inclusion zone
-            let ch = calculateInclusionWindows(p.rawChannels);
-            let ninetyPercentInclusion = setBoundsPhone(p, ch);
-            showPhone(ninetyPercentInclusion);
+            let rawChannels = [];
+            if (p.fileNames) { // collecting raw channels from all variants
+                let promises = p.fileNames.map(fileName => {
+                    return new Promise((resolve, reject) => {
+                        loadFiles({ ...p, fileName }, channels => {
+                            if (channels) {
+                                rawChannels = rawChannels.concat(channels);
+                            }
+                            resolve();
+                        });
+                    });
+                });
+
+                Promise.all(promises).then(() => {
+                    let ch = calculateInclusionWindows(rawChannels);
+                    let ninetyPercentInclusion = setBoundsPhone(p, ch);
+                    showPhone(ninetyPercentInclusion);
+                    console.log(rawChannels)
+                });
+            } else {
+                let ch = calculateInclusionWindows(p.rawChannels);
+                let ninetyPercentInclusion = setBoundsPhone(p, ch);
+                showPhone(ninetyPercentInclusion);
+            }
         } else {
             let ninetyPercentInclusion = activePhones.filter(q=>q.fullName===p.fullName+inclusionName);
             removePhone(ninetyPercentInclusion[0]);
