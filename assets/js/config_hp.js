@@ -233,7 +233,7 @@ function setupGraphAnalytics() {
     if ( analyticsEnabled ) {
         const pageHead = document.querySelector("head"),
               graphAnalytics = document.createElement("script"),
-              graphAnalyticsSrc = "graphAnalytics.js";
+              graphAnalyticsSrc = "assets/js/graphAnalytics.js";
         
         graphAnalytics.setAttribute("src", graphAnalyticsSrc);
         pageHead.append(graphAnalytics);
