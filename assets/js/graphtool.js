@@ -401,6 +401,8 @@ function fmtX(xa) {
     xAxis(xa);
     (xa.selection ? xa.selection() : xa).select(".domain").remove();
     xa.selectAll(".tick line")
+      .attr("y1", 10)
+      .attr("y2", 312)
       .attr("stroke", "#333")
       .attr("stroke-width", (_,i) => tickThickness[getTickType(i)])
       .attr("opacity", "0.6");
