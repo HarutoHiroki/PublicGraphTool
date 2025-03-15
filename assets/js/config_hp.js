@@ -95,7 +95,7 @@ function watermark(svg) {
     
     if ( rig_description ) {
         wm.append("text")
-            .attrs({x:380, y:-134, "font-size":8, "text-anchor":"end", "class":"rig-description"})
+            .attrs({x:380, y:-134, "font-size":8, "text-anchor":"end", "class":"rig-description", "style": "filter: var(--svg-filter);"})
             .text("Measured on: " + rig_description);
     }
     
