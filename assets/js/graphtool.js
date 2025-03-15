@@ -982,7 +982,7 @@ const sampnums = typeof num_samples !== "undefined" ? d3.range(1,num_samples+1)
                                                     : [""];
 function loadFiles(p, callback) {
     let l = f => d3.text(DIR+f+".txt").catch(()=>null);
-    let lt = f => d3.text(DIR+"targets/"+f+".txt").catch(()=>null);
+    let lt = f => d3.text(DIR+"targets/"+f+".txt").catch(()=> l(f));
     let f = p.isTarget ? [lt(p.fileName)]
           : d3.merge(LR.map(s =>
                 sampnums.map(n => l(p.fileName+" "+s+n))));
