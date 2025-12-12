@@ -547,17 +547,12 @@ dB.updatey = function (dom) {
 
 // y-axis scaler button
 const defY = dB.y;
-
-function updateYScaling(h, y) {
-    let sc = h/dB.H;
-    dB.h = 15*sc;
-    dB.y = y;
-    dB.circ.attr("cy",s=>h*s);
-    dB.scale.attr("transform", "scale(1,"+sc+")");
-    dB.mid.attrs({y:dB.y-dB.h,height:2*dB.h});
-    dB.trans.attr("transform", dB.tr());
-    dB.updatey();
-    updateBoundsScaling(h);
+const scales = {
+  "20db": {name:"20dB", h:152, y:172},
+  "30db": {name:"30dB", h:101.33, y:172},
+  "40db": {name:"40dB", h: dB.H, y:defY},
+  "50db": {name:"50dB", h:60.79, y:172},
+  "crin": {name:"Crin", h:54.77, y:156.94},
 }
 
 function updateBoundsScaling(h) {
@@ -567,58 +562,29 @@ function updateBoundsScaling(h) {
 }
 updateBoundsScaling(dB.H);
 
+function changeScaling(to) {
+    let btn = document.querySelector("#yscalebtn")
+    let s = scales[to.toLowerCase()];
+    if (!s) return;
+    let sc = s.h/dB.H;
+    dB.h = 15*sc;
+    dB.y = s.y;
+    dB.circ.attr("cy",sm=>s.h*sm);
+    dB.scale.attr("transform", "scale(1,"+sc+")");
+    dB.mid.attrs({y:dB.y-dB.h,height:2*dB.h});
+    dB.trans.attr("transform", dB.tr());
+    btn.className = s.name.toLowerCase();
+    btn.innerHTML = s.name;
+    dB.updatey();
+    updateBoundsScaling(s.h);
+}
+
 doc.select("#yscalebtn").on("click", function() {
-    changeScaling(this.classList[0]);
+    let keys = Object.keys(scales);
+    let i = keys.indexOf(this.className);
+    changeScaling(keys[(i+1)%keys.length]);
+    console.log(scales[keys[(i+1)%keys.length]]);
 });
-
-function changeScaling(y_scale) {
-    let button = document.querySelector("#yscalebtn");
-    switch (y_scale) {
-        case "20db":
-            button.className = "30db";
-            button.innerHTML = "30dB";
-            updateYScaling(101.33, 172);
-            break;
-        case "30db":
-            button.className = "40db";
-            button.innerHTML = "40dB";
-            updateYScaling(dB.H, defY);
-            break;
-        case "40db":
-            button.className = "50db";
-            button.innerHTML = "50dB";
-            updateYScaling(60.79, 172);
-            break;
-        case "50db":
-            //button.classList.remove("50db");
-            button.className = "crin";
-            button.innerHTML = "Crin";
-            updateYScaling(54.77, 156.94);
-            break;
-        case "crin":
-            //button.classList.remove("crin");
-            button.className = "20db";
-            button.innerHTML = "20dB";
-            updateYScaling(152, 172);
-            break;
-        default:
-            button.className = "40db";
-            button.innerHTML = "40dB";
-            updateYScaling(dB.H, defY);
-            break;
-    }
-}
-
-// check if user defined a default y scale
-function checkUserDefaultScale() {
-    let validScales = ["20db", "30db", "40db", "50db", "crin"];
-    if (default_y_scale && validScales.includes(default_y_scale)) {
-        let fauxIndex = validScales.indexOf(default_y_scale);
-        let trueIndex = fauxIndex === 0 ? validScales.length - 1 : fauxIndex - 1;
-        changeScaling(validScales[trueIndex]);
-    }
-}
-
 
 // Label drawing and screenshot
 let getFullName = p => p.dispBrand+" "+p.dispName,
@@ -2375,7 +2341,7 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     });
 
     // update y scaling
-    checkUserDefaultScale();
+    if (default_y_scale && scales[default_y_scale.toLowerCase()]) changeScaling(default_y_scale);
 
     // -------------------- Custom DF Tilt -------------------- //
     function updateDispVals() {
@@ -3962,6 +3928,7 @@ function addHeader() {
     
     headerButton.className = "header-button";
     headerLogoElem.className = "logo";
+    headerLogoElem.setAttribute('style', "margin-right: 0;");
     headerLogoLink.setAttribute('href', site_url);
     if (headerLogoText) {
         headerLogoSpan.innerText = headerLogoText;

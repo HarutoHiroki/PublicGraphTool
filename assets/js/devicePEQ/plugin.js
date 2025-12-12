@@ -175,8 +175,122 @@ async function initializeDeviceEqPlugin(context) {
     }
   }
 
+  // Function to show toast messages
+  // Parameters:
+  // - message: The text message to display
+  // - type: The type of toast (success, error, warning) with default 'success'
+  // - timeout: The time in milliseconds before the toast disappears (default 5000ms)
+  // - requireClick: If true, adds a "Continue" button that must be clicked to dismiss the toast (ignores timeout)
+  //                 and returns a Promise that resolves when the button is clicked
+  //
+  // Example usage with await to block execution until user clicks Continue:
+  // async function someFunction() {
+  //   // Show a toast and wait for user to click Continue
+  //   await showToast("Please confirm to continue", "warning", 0, true);
+  //   // Code here will only execute after the user clicks Continue
+  //   console.log("User clicked Continue");
+  // }
+  function showToast(message, type = 'success', timeout = 5000, requireClick = false) {
+    return new Promise((resolve) => {
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.id = `device-toast-${type}`; // Type-specific ID
+
+      // Create message container
+      const messageContainer = document.createElement('div');
+      messageContainer.textContent = message;
+      toast.appendChild(messageContainer);
+
+      // Set style based on type
+      if (type === 'success') {
+        toast.style.backgroundColor = '#4CAF50'; // Green
+        toast.style.bottom = '80px'; // Bottom position for success
+      } else if (type === 'error') {
+        toast.style.backgroundColor = '#F44336'; // Red
+        toast.style.top = '30px'; // Top position for error
+        toast.style.bottom = 'auto'; // Override bottom
+      } else if (type === 'warning') {
+        toast.style.backgroundColor = '#FF9800'; // Orange
+        toast.style.bottom = '30px'; // Bottom position for warning
+      }
+
+      // Common styles
+      toast.style.color = 'white';
+      toast.style.padding = '16px';
+      toast.style.borderRadius = '4px';
+      toast.style.position = 'fixed';
+      toast.style.zIndex = '10000';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.minWidth = '250px';
+      toast.style.textAlign = 'center';
+      toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+
+      // Check for existing toast of the same type
+      const existingToast = document.getElementById(`device-toast-${type}`);
+      if (existingToast) {
+        // Check if the existing toast has a continue button (requireClick=true)
+        const continueButton = existingToast.querySelector('button');
+        if (continueButton) {
+          // If there's an existing toast with a continue button, return early
+          // to allow the user to interact with it
+          return resolve(); // Resolve immediately since we're not showing a new toast
+        }
+        document.body.removeChild(existingToast);
+      }
+
+      // If requireClick is true, add a continue button
+      if (requireClick) {
+        // Add a continue button
+        const continueButton = document.createElement('button');
+        continueButton.textContent = 'Click here to Continue';
+        continueButton.style.marginTop = '10px';
+        continueButton.style.padding = '5px 15px';
+        continueButton.style.backgroundColor = 'white';
+        continueButton.style.color = toast.style.backgroundColor;
+        continueButton.style.border = 'none';
+        continueButton.style.borderRadius = '3px';
+        continueButton.style.cursor = 'pointer';
+        continueButton.style.fontWeight = 'bold';
+
+        // Add click event to remove the toast and resolve the promise
+        continueButton.addEventListener('click', () => {
+          if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+          }
+          resolve(); // Resolve the promise when the button is clicked
+        });
+
+        toast.appendChild(continueButton);
+      } else {
+        // Auto remove after xx seconds if requireClick is false
+        setTimeout(() => {
+          if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+          }
+          resolve(); // Resolve the promise when the toast is automatically removed
+        }, timeout);
+      }
+
+      // Add to document
+      document.body.appendChild(toast);
+    });
+  }
+
+  // Make showToast globally accessible for handlers
+  window.showToast = showToast;
+
   function loadHtml() {
-    // Define the HTML to insert
+    // Set default values for configuration
+    var headingTag = 'h4';
+
+    // Override with context config values if available
+    if (context && context.config) {
+      if (context.config.devicePEQHeadingTag) {
+          headingTag = context.config.devicePEQHeadingTag;
+      }
+    }
+      // Define the HTML to insert
     const deviceEqHTML = `
         <div class="device-eq disabled" id="deviceEqArea">
         <style>
@@ -284,8 +398,21 @@ async function initializeDeviceEqPlugin(context) {
     .sub-tab-content.active {
       display: block;
     }
+
+        /* Styles to force checkbox visibility */
+    #tab-feedback input[type="checkbox"] {
+      -webkit-appearance: checkbox; /* Force WebKit browsers to show default checkbox */
+      appearance: compat-auto = checkbox;
+      width: 16px;  /* Or any desired size */
+      height: 16px; /* Or any desired size */
+      opacity: 1;
+      position: static; /* Ensure it's not positioned off-screen */
+      visibility: visible;
+      display: inline-block; /* Or block, depending on layout */
+    }
+
         </style>
-            <h5>Device PEQ</h5>
+            <${headingTag}>Device PEQ</${headingTag}>
             <div class="settings-row">
                 <button class="connect-device">Connect to Device</button>
                 <button class="disconnect-device">Disconnect From <span id="deviceName">None</span></button>
@@ -306,31 +433,40 @@ async function initializeDeviceEqPlugin(context) {
         <div id="deviceInfoModal" class="modal hidden">
           <div class="modal-content">
             <button id="closeModalBtn" class="close" aria-label="Close Modal">&times;</button>
-            <h3>About Device PEQ - v0.5</h3>
+            <h3>About Device PEQ - v0.16</h3>
 
             <div class="tabs">
               <button class="tab-button active" data-tab="tab-overview">Overview</button>
               <button class="tab-button" data-tab="tab-supported">Supported Devices</button>
               <button class="tab-button" data-tab="tab-howto">How to Use</button>
+              <button class="tab-button" data-tab="tab-feedback">Feedback</button>
             </div>
 
             <div id="tab-overview" class="tab-content active">
               <p>This section lets you connect to a compatible USB or network-connected audio device (such as Moondrop, Tanchjim, JDS Labs, WiiM, or other Walkplay-based products) and interact with its Parametric EQ (PEQ) settings.</p>
 
-              <h4>Supported Brands & Manufacturers</h4>
-              <ul>
-                <li><strong>FiiO:</strong> JA11, KA15 and KA17</li>
-                <li><strong>Moondrop:</strong> CDSP, Chu II DSP, Quark2 </li>
-                <li><strong>Tanchjim:</strong> Bunny DSP, One DSP </li>
-                <li><strong>EPZ:</strong> GM20 and TP13</li>
-                <li><strong>KiwiEars:</strong> Allegro and Allegro Pro</li>
-                <li><strong>JCally:</strong> JM20 Pro, JM12</li>
-                <li><strong>Walkplay</strong> Most devices compatible with Walkplay Android APK</li>
-                <li><strong>KTMicro</strong> Many KTMicro DSP devices should work </li>
-                <li><strong>JDS Labs:</strong> Supporting the Element IV via USB Serial interface</li>
-                <li><strong>WiiM:</strong> Supports pushing parametric EQ over the home network</li>
-                <li><strong>Experimental:</strong> Many more device's that have yet to be tested, will be marked as 'Experimental' but may work fine</li>
-              </ul>
+              <details>
+                <summary style="cursor: pointer; font-weight: bold;">Supported Brands & Manufacturers <span style="font-weight: normal; color: #666; font-size: 90%;">(click to expand)</span></summary>
+                <ul style="margin-top: 8px;">
+                  <li><strong>CrinEar:</strong> Protocol Max</li>
+                  <li><strong>FiiO:</strong> JA11, KA15, KA17, FX17, QX13</li>
+                  <li><strong>Moondrop:</strong> CDSP, Chu II DSP, Quark2, Rays, Marigold </li>
+                  <li><strong>Tanchjim:</strong> Bunny DSP, Fission, One DSP, Stargate II </li>
+                  <li><strong>Truthear</strong> KeyX </li>
+                  <li><strong>EPZ:</strong> GM20 and TP13</li>
+                  <li><strong>Nicehck:</strong> Octave</li>
+                  <li><strong>TRN:</strong> Black Pearl</li>
+                  <li><strong>KiwiEars:</strong> Allegro and Allegro Pro</li>
+                  <li><strong>JCally:</strong> JM20 Pro, JM12, JM98 Pro</li>
+                  <li><strong>Walkplay</strong> Most devices compatible with Walkplay Android APK</li>
+                  <li><strong>KTMicro</strong> Many KTMicro DSP devices should work </li>
+                  <li><strong>JDS Labs:</strong> Supporting the Element IV via USB Serial interface</li>
+                  <li><strong>Nothing:</strong> Headphone (1) via Serial USB or Bluetooth</li>
+                  <li><strong>WiiM:</strong> Supports limited pushing of parametric EQ over the home network</li>
+                  <li><strong>Luxsin:</strong> X9 supports reading and writing PEQ over your home network (HTTP)</li>
+                  <li><strong>Experimental:</strong> Many more device's that have yet to be tested, will be marked as 'Experimental' but may work fine</li>
+                </ul>
+              </details>
             </div>
 
             <div id="tab-supported" class="tab-content">
@@ -339,7 +475,9 @@ async function initializeDeviceEqPlugin(context) {
                 <button class="sub-tab-button" data-subtab="sub-walkplay">Walkplay</button>
                 <button class="sub-tab-button" data-subtab="sub-tanchjim">KTMicro</button>
                 <button class="sub-tab-button" data-subtab="sub-jdslabs">JDS Labs</button>
+                <button class="sub-tab-button" data-subtab="sub-nothing">Nothing</button>
                 <button class="sub-tab-button" data-subtab="sub-wiim">WiiM</button>
+                <button class="sub-tab-button" data-subtab="sub-luxsin">Luxsin</button>
               </div>
 
               <div id="sub-fiio" class="sub-tab-content active">
@@ -349,6 +487,8 @@ async function initializeDeviceEqPlugin(context) {
                   <li>JA11</li>
                   <li>KA17</li>
                   <li>KA15</li>
+                  <li>FX17 (with usbc adapter)</li>
+                  <li>QX13</li>
                   <li><em>Note:</em> Retro Nano has limited compatibility</li>
                 </ul>
                 <p>Mostly if a FiiO device works with their excellent Web-based PEQ editor at <a href="https://fiiocontrol.fiio.com" target="_blank">fiiocontrol.fiio.com</a> it should work here also</p>
@@ -377,6 +517,8 @@ async function initializeDeviceEqPlugin(context) {
                   <li>Moondrop Quark2</li>
                   <li>Tanchjim One DSP (IEM)</li>
                   <li>Tanchjim Bunny DSP (IEM)</li>
+                  <li>Tanchjim Fission (IEM)</li>
+                  <li>JCally JM12</li>
                 </ul>
                 <p>You also use the official Tanchjim Android App for EQ and device configuration.</p>
               </div>
@@ -387,10 +529,32 @@ async function initializeDeviceEqPlugin(context) {
               <p>Note: This option is only visible in advanced mode </p>
             </div>
 
+            <div id="sub-nothing" class="sub-tab-content">
+              <h5>Nothing</h5>
+              <p>Beta support for Nothing Headphone (1) via Serial USB or Bluetooth connection. Supports reading and writing custom EQ profiles with up to 8 parametric filters.</p>
+              <ul>
+                <li>Nothing Headphone (1) - Beta support</li>
+              </ul>
+              <p>The Nothing headphones support multiple EQ profiles: Balanced, Voice, More Treble, More Bass, and Custom. Only the Custom profile supports writing parametric EQ filters.</p>
+              <p>Note: This is experimental devicePEQ Bluetooth support and requires compatible browser with Web Serial API.</p>
+            </div>
+
             <div id="sub-wiim" class="sub-tab-content">
               <h5>WiiM</h5>
               <p>Supports network-based PEQ settings for WiiM devices using HTTP APIs. Requires entering the local IP address of the device and selecting the audio source (e.g., Wi-Fi, Bluetooth).</p>
               <p>Note: This option is only visible in advanced mode </p>
+            </div>
+
+            <div id="sub-luxsin" class="sub-tab-content">
+              <h5>Luxsin X9</h5>
+              <p>Supports full network-based PEQ control for the Luxsin X9 using its local HTTP interface. You can both read (pull) and write (push) PEQ filters.</p>
+              <ul>
+                <li>Find the X9 IP address in the Luxsin/WalkPlay app.</li>
+                <li>Use "Connect to Device" → "Network", select "Luxsin X9", and enter the IP.</li>
+                <li>Optional: Use "Test IP" to open <code>/dev/info.cgi?action=syncData</code>; you should see encoded text if the IP is correct.</li>
+                <li>After connecting, choose the PEQ slot, then Pull or Push filters as needed.</li>
+              </ul>
+              <p>Tip: No HTTPS certificate steps are needed; Luxsin uses plain HTTP on the local network.</p>
             </div>
           </div>
 
@@ -403,17 +567,69 @@ async function initializeDeviceEqPlugin(context) {
                 <li><strong>Disconnect:</strong> Cleanly close the USB connection.</li>
               </ul>
               <p>⚠️ Please ensure your device is compatible and unlocked. Some may require the official app to enable USB EQ editing.</p>
+              <h5 style="margin-top:10px;">Network Devices</h5>
+              <p><strong>Luxsin X9:</strong> Choose Network → Luxsin X9, enter the device IP (from the Luxsin/WalkPlay app), and optionally click Test IP. A new tab should show encoded text at <code>/dev/info.cgi?action=syncData</code>. You can Pull and Push PEQ filters after connecting.</p>
+              <p><strong>WiiM:</strong> Choose Network → WiiM and accept the self-signed HTTPS certificate in the browser when prompted. Pushing PEQ is supported; pulling may be limited by browser security.</p>
+            </div>
+
+            <div id="tab-feedback" class="tab-content">
+              <p><strong>Help us improve!</strong> Your feedback is valuable to us. Please let us know about your experience with Device PEQ.</p>
+
+              <div style="margin-bottom: 10px; text-align: left; display: flex; align-items: center;">
+                <input type="checkbox" id="modal-is-working-checkbox" style="margin-right: 8px;">
+                <label for="modal-is-working-checkbox" style="font-size: 14px;">
+                  Feature is working correctly
+                </label>
+              </div>
+
+              <div style="margin-bottom: 10px; text-align: left; display: flex; align-items: center;">
+                <input type="checkbox" id="modal-include-logs-checkbox" style="margin-right: 8px;">
+                <label for="modal-include-logs-checkbox" style="font-size: 14px;">
+                  Include console logs to help diagnose issues
+                </label>
+              </div>
+
+              <div style="margin-bottom: 10px; text-align: left;">
+                <label for="modal-device-name-input" style="font-size: 14px; display: block; margin-bottom: 5px;">
+                  Device Name (optional):
+                </label>
+                <input type="text" id="modal-device-name-input" placeholder="Enter your device name" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+              </div>
+
+              <div style="margin-bottom: 10px; text-align: left;">
+                <label for="modal-comments-input" style="font-size: 14px; display: block; margin-bottom: 5px;">
+                  Comments (optional):
+                </label>
+                <textarea id="modal-comments-input" placeholder="Please describe any issues you're experiencing or suggestions you have..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 100px;"></textarea>
+              </div>
+
+              <div style="text-align: center; margin-top: 15px;">
+                <button id="modal-feedback-button" class="button">Send Feedback</button>
+                <div id="modal-feedback-status" style="margin-top: 10px; display: none;"></div>
+              </div>
             </div>
           </div>
         </div>
     `;
-    // Find the <div class="extra-eq"> element
-    const extraEqElement = document.querySelector('.extra-eq');
+    // More flexible way to insert HTML into the DOM
+    var placement = 'afterend';
+    var anchorDiv = '.extra-eq';
+    if (context && context.config ) {
+        if (context.config.devicePEQPlacement) {
+            placement = context.config.devicePEQPlacement;
+        }
+        if (context.config.devicePEQAnchorDiv) {
+            anchorDiv = context.config.devicePEQAnchorDiv;
+        }
+    }
+
+      // Find the <div class="extra-eq"> element
+    const extraEqElement = document.querySelector(anchorDiv);
 
     if (extraEqElement) {
       // Insert the new HTML below the "extra-eq" div
-      extraEqElement.insertAdjacentHTML('afterend', deviceEqHTML);
-      console.log('Device EQ UI added below <div class="extra-eq">');
+      extraEqElement.insertAdjacentHTML(placement, deviceEqHTML);
+      console.log('Device EQ UI added ' + placement + ' <div class="' + deviceEqHTML + '">');
     } else {
       console.error('Element <div class="extra-eq"> not found in the DOM.');
     }
@@ -460,6 +676,96 @@ async function initializeDeviceEqPlugin(context) {
       });
     });
 
+    // Function to collect recent console logs
+    function collectConsoleLogs() {
+      // Return the last 100 console logs that contain plugin-related keywords
+      if (!window.consoleLogHistory) {
+        return "No console logs available";
+      }
+
+      // Filter logs related to the plugin
+      const pluginLogs = window.consoleLogHistory.filter(log =>
+        log.includes("Device") ||
+        log.includes("PEQ") ||
+        log.includes("USB") ||
+        log.includes("plugin") ||
+        log.includes("connector")
+      );
+
+      // Return the last 100 logs or all if less than 100
+      return pluginLogs.slice(-100).join("\n");
+    }
+
+    // Set up feedback form submission
+    document.getElementById("modal-feedback-button").addEventListener("click", () => {
+      // Get values from form elements
+      const includeLogsCheckbox = document.getElementById("modal-include-logs-checkbox");
+      const isWorkingCheckbox = document.getElementById("modal-is-working-checkbox");
+      const deviceNameInput = document.getElementById("modal-device-name-input");
+      const commentsInput = document.getElementById("modal-comments-input");
+      const statusContainer = document.getElementById("modal-feedback-status");
+
+      // If console log is empty, capture it now
+      let logs = "";
+      if (includeLogsCheckbox && includeLogsCheckbox.checked) {
+        logs = collectConsoleLogs();
+      }
+
+      // Show status message
+      statusContainer.style.display = "block";
+      statusContainer.style.padding = "8px";
+      statusContainer.style.borderRadius = "4px";
+      statusContainer.style.textAlign = "center";
+      statusContainer.style.backgroundColor = "#f8f9fa";
+      statusContainer.style.color = "#333";
+      statusContainer.textContent = "Submitting your feedback...";
+
+      // Submit to Google Form
+      submitFeedbackToGoogleForm(
+        deviceNameInput && deviceNameInput.value ? deviceNameInput.value : "Not specified",
+        commentsInput,
+        logs,
+        isWorkingCheckbox && isWorkingCheckbox.checked,
+        statusContainer
+      );
+    });
+
+    async function submitFeedbackToGoogleForm(deviceName, comments, logs, isWorking, statusContainer) {
+      const formData = new URLSearchParams();
+      formData.append('entry.1909598303', deviceName);
+      formData.append('entry.1928983035', comments && comments.value ? comments.value : "No comments provided");
+      formData.append('entry.466843002', logs || "No logs available");
+      formData.append('entry.1088832316', isWorking ? "Working" : "Not Working");
+
+      try {
+        const response = await fetch('https://docs.google.com/forms/d/e/1FAIpQLSfSaNpdpAvd39tOupDqzyUW_aFEVawywAz4xls4m1z2_T3BOQ/formResponse', {
+          method: 'POST',
+          mode: 'no-cors', // Google Forms requires no-cors mode
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData.toString()
+        });
+
+        // Note: With no-cors mode, we can't access the response details
+        // But we can assume it worked if no error was thrown
+        console.log("Google Form Submission Completed");
+
+        statusContainer.style.backgroundColor = "#d4edda";
+        statusContainer.style.color = "#155724";
+        statusContainer.textContent = "Thank you for your feedback!";
+
+        setTimeout(() => {
+          statusContainer.style.display = "none";
+        }, 3000);
+
+      } catch (error) {
+        console.error("Error submitting to Google Form:", error);
+        statusContainer.style.backgroundColor = "#f8d7da";
+        statusContainer.style.color = "#721c24";
+        statusContainer.textContent = "Failed to submit feedback.";
+      }
+    }
   }
 
   try {
@@ -506,7 +812,7 @@ async function initializeDeviceEqPlugin(context) {
 
             if (selection.connectionType == "network") {
               if (!selection.ipAddress) {
-                alert("Please enter a valid IP address.");
+                showToast("Please enter a valid IP address.", "error");
                 return;
               }
               setCookie("networkDeviceIP", selection.ipAddress, 30); // Save IP for 30 days
@@ -515,7 +821,7 @@ async function initializeDeviceEqPlugin(context) {
               // Connect via Network using the provided IP
               const device = await NetworkDeviceConnector.getDeviceConnected(selection.ipAddress, selection.deviceType);
               if (device?.handler == null) {
-                alert("Sorry, this network device is not currently supported.");
+                showToast("Sorry, this network device is not currently supported.", "error");
                 await NetworkDeviceConnector.disconnectDevice();
                 return;
               }
@@ -526,12 +832,26 @@ async function initializeDeviceEqPlugin(context) {
                   await NetworkDeviceConnector.getAvailableSlots(device),
                   await NetworkDeviceConnector.getCurrentSlot(device)
                 );
+
+                // Check if device supports fewer filters than currently in context
+                const currentFilters = context.elemToFilters(true);
+                if (currentFilters.length > device.modelConfig.maxFilters) {
+                  console.warn(`Device only supports ${device.modelConfig.maxFilters} PEQ filters but ${currentFilters.length} filters are currently loaded`);
+                  if (window.showToast) {
+                    await window.showToast(`Warning: This device only supports ${device.modelConfig.maxFilters} PEQ filters, but you currently have ${currentFilters.length} filters loaded. Only the first ${device.modelConfig.maxFilters} will be applied when pushed.`, "warning", 10000, true);
+                  }
+                }
               }
             } else if (selection.connectionType == "usb") {
               // Connect via USB and show the HID device picker
               const device = await UsbHIDConnector.getDeviceConnected();
-              if (device?.handler == null) {
-                alert("Sorry, this USB device is not currently supported.");
+              // If the user cancelled the chooser, just exit silently
+              if (device?.cancelled) {
+                return;
+              }
+              // If device is explicitly marked unsupported or has no handler, show unsupported toast
+              if (device?.unsupported || device?.handler == null) {
+                showToast("Sorry, this USB device is not currently supported.", "error");
                 await UsbHIDConnector.disconnectDevice();
                 return;
               }
@@ -559,6 +879,15 @@ async function initializeDeviceEqPlugin(context) {
                   await UsbHIDConnector.getCurrentSlot(device)
                 );
 
+                // Check if device supports fewer filters than currently in context
+                const currentFilters = context.elemToFilters(true);
+                if (currentFilters.length > device.modelConfig.maxFilters) {
+                  console.warn(`Device only supports ${device.modelConfig.maxFilters} PEQ filters but ${currentFilters.length} filters are currently loaded`);
+                  if (window.showToast) {
+                    await window.showToast(`Warning: This device only supports ${device.modelConfig.maxFilters} PEQ filters, but you currently have ${currentFilters.length} filters loaded. Only the first ${device.modelConfig.maxFilters} will be applied when pushed.`, "warning", 10000, true);
+                  }
+                }
+
                 device.rawDevice.addEventListener('disconnect', () => {
                   console.log(`Device ${device.rawDevice.productName} disconnected.`);
                   deviceEqUI.showDisconnectedState();
@@ -567,8 +896,12 @@ async function initializeDeviceEqPlugin(context) {
             } else if (selection.connectionType == "serial") {
               // Connect via USB and show the Serial device picker
               const device = await UsbSerialConnector.getDeviceConnected();
+              // If the user cancelled the chooser, just exit silently
+              if (device?.cancelled) {
+                return;
+              }
               if (device?.handler == null) {
-                alert("Sorry, this USB Serial device is not currently supported.");
+                showToast("Sorry, this USB Serial device is not currently supported.", "error");
                 await UsbSerialConnector.disconnectDevice();
                 return;
               }
@@ -596,6 +929,15 @@ async function initializeDeviceEqPlugin(context) {
                   await UsbSerialConnector.getCurrentSlot(device)
                 );
 
+                // Check if device supports fewer filters than currently in context
+                const currentFilters = context.elemToFilters(true);
+                if (currentFilters.length > device.modelConfig.maxFilters) {
+                  console.warn(`Device only supports ${device.modelConfig.maxFilters} PEQ filters but ${currentFilters.length} filters are currently loaded`);
+                  if (window.showToast) {
+                    await window.showToast(`Warning: This device only supports ${device.modelConfig.maxFilters} PEQ filters, but you currently have ${currentFilters.length} filters loaded. Only the first ${device.modelConfig.maxFilters} will be applied when pushed.`, "warning", 10000, true);
+                  }
+                }
+
                 device.rawDevice.addEventListener('disconnect', () => {
                   console.log(`Device ${device.rawDevice.productName} disconnected.`);
                   deviceEqUI.showDisconnectedState();
@@ -604,7 +946,7 @@ async function initializeDeviceEqPlugin(context) {
             }
           } catch (error) {
             console.error("Error connecting to device:", error);
-            alert("Failed to connect to the device.");
+            showToast("Failed to connect to the device.", "error");
           }
         });
 
@@ -850,36 +1192,48 @@ async function initializeDeviceEqPlugin(context) {
         <!-- Selection Buttons (Vertical Layout) -->
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
           <button id="usb-hid-button" style="margin: 5px 0; padding: 10px 15px; font-size: 14px; background: #007BFF; color: #fff; border: none; border-radius: 4px; cursor: pointer; width: 80%;">USB Device</button>
-          <button id="usb-serial-button" style="margin: 5px 0; padding: 10px 15px; font-size: 14px; background: #6f42c1; color: #fff; border: none; border-radius: 4px; cursor: pointer; width: 80%;">USB Serial Device</button>
+          <button id="usb-serial-button" style="margin: 5px 0; padding: 10px 15px; font-size: 14px; background: #6f42c1; color: #fff; border: none; border-radius: 4px; cursor: pointer; width: 80%;">Serial USB or Bluetooth Device</button>
           <button id="network-button" style="margin: 5px 0; padding: 10px 15px; font-size: 14px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; width: 80%;">Network</button>
         </div>
 
         <!-- IP Address Input -->
         <input type="text" id="ip-input" placeholder="Enter IP Address" value="${storedIP}" style="display: none; margin-top: 10px; width: 80%;">
         <!-- Test IP Button (Initially Hidden) -->
-        <button id="test-ip-button" style="display: none; margin-top: 10px; padding: 8px 12px; font-size: 13px; background: #ffc107; color: #000; border: none; border-radius: 4px; cursor: pointer;">
-          Test IP Address (Open in Browser Tab)
-        </button>
+        <button id="test-ip-button" style="display: none; margin-top: 10px; padding: 8px 12px; font-size: 13px; background: #ffc107; color: #000; border: none; border-radius: 4px; cursor: pointer;">Test IP Address</button>
         <!-- Network Options -->
         <div id="network-options" style="display: none; margin-top: 15px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 6px; font-size: 14px; color: #222;">
-          <p style="margin-bottom: 10px;"><strong>⚠️ Advanced Network Configuration</strong></p>
-          <p>This section requires some basic understanding of networking. Please continue only if you are familiar with concepts like IP addresses and self-signed certificates.</p>
-
-          <p><strong>Why the warning?</strong></p>
-          <p>Devices like the <strong>WiiM</strong> expose a local web server for configuration (similar to how home routers work). These devices often use a <em>self-signed certificate</em> to enable HTTPS, which is secure but <b>not trusted</b> by your browser by default.</p>
-
-          <p>As a result, when trying to connect via a web browser, you may see a <strong>security warning</strong> (e.g., "Your connection is not private"). This is normal and expected. If you choose to <b>trust the device</b> and accept the warning, this tool will attempt to access its PEQ API.</p>
-
-          <p>Note: Due to this security restriction I can only push the PEQ filters to the WiiM Device and cannot read them. They will be called HeadphoneEQ when pushed.</p>
-
-          <p>If you're okay proceed you can at least push the PEQ to this device, reading from the device breaks this security and will fail</p>
+          <p style="margin-bottom: 10px;"><strong>Network Device Selection</strong></p>
+          <p>Select which network device you are using. We recommend using the official apps to find the IP address on your network.</p>
+          <ul style="margin: 8px 0 12px 22px; color: #333;">
+            <li>WiiM: Use the WiiM Home app to find the device IP</li>
+            <li>Luxsin X9: Use the Luxsin/WalkPlay app to find the device IP</li>
+          </ul>
           <div style="margin-top: 10px; text-align: center;">
             <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px; font-weight: bold; color: black;">
-              <input type="radio" name="network-device" value="WiiM" ${storedDeviceType === "WiiM" ? "checked" : ""} style="width: 18px; height: 18px;"> WiiM
+              <input type="radio" name="network-device" value="WiiM" ${storedDeviceType === "WiiM" ? "checked" : ""} style="width: 18px; height: 18px; appearance: auto !important; -webkit-appearance: radio !important; -moz-appearance: radio !important; accent-color: #007BFF;"> WiiM
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 5px; margin-right: 15px; font-weight: bold; color: black;">
+              <input type="radio" name="network-device" value="Luxsin" ${storedDeviceType === "Luxsin" ? "checked" : ""} style="width: 18px; height: 18px; appearance: auto !important; -webkit-appearance: radio !important; -moz-appearance: radio !important; accent-color: #007BFF;"> Luxsin X9
             </label>
             <label style="display: inline-flex; align-items: center; gap: 5px; font-weight: bold; color: gray;">
-              <input type="radio" name="network-device" value="coming-soon" disabled ${storedDeviceType === "coming-soon" ? "checked" : ""} style="width: 18px; height: 18px;"> Other Devices Coming Soon
+              <input type="radio" name="network-device" value="coming-soon" disabled ${storedDeviceType === "coming-soon" ? "checked" : ""} style="width: 18px; height: 18px; appearance: auto !important; -webkit-appearance: radio !important; -moz-appearance: radio !important; accent-color: #007BFF;"> Other Devices (coming soon)
             </label>
+          </div>
+
+          <!-- Device-specific help -->
+          <div id="device-help" style="margin-top: 12px; background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
+            <div id="help-wiim" style="display: none; color: #222;">
+              <p><strong>WiiM process</strong></p>
+              <p>WiiM uses HTTPS with a self-signed certificate on its local web server. Your browser will likely warn that the connection is not private. This is expected.</p>
+              <p>To proceed, open the device page in a new tab and accept the certificate warning. After that, this tool can push PEQ settings to the device (reading settings is limited by browser security and may not work).</p>
+              <p>Tip: Use the WiiM Home app to find the device IP address.</p>
+            </div>
+            <div id="help-luxsin" style="display: none; color: #222;">
+              <p><strong>Luxsin X9 process</strong></p>
+              <p>Luxsin X9 uses a simple HTTP interface. When you test the IP, this tool opens <code>/dev/info.cgi?action=syncData</code> on the device; if the IP is correct you should see text/plain content that looks like encoded gibberish (this is expected).</p>
+              <p>No HTTPS certificate acceptance is required. You can both read (pull) and write (push) PEQ settings.</p>
+              <p>Tip: Use the Luxsin/WalkPlay app to find the device IP address. Advanced users can also check <code>/dev/info.cgi?action=syncPeq</code> for current PEQ.</p>
+            </div>
           </div>
         </div>
         <!-- Action Buttons -->
@@ -897,6 +1251,8 @@ async function initializeDeviceEqPlugin(context) {
             const networkOptions = document.getElementById("network-options");
             const submitButton = document.getElementById("submit-button");
             const testIpButton = document.getElementById("test-ip-button");
+            const helpWiim = document.getElementById("help-wiim");
+            const helpLuxsin = document.getElementById("help-luxsin");
             // Event: USB HID
             document.getElementById("usb-hid-button").addEventListener("click", () => {
               document.body.removeChild(dialogContainer);
@@ -914,6 +1270,10 @@ async function initializeDeviceEqPlugin(context) {
               ipInput.style.display = "block";
               networkOptions.style.display = "block";
               submitButton.style.display = "inline-block";
+              // Initialize help visibility based on stored device type
+              const selectedDevice = document.querySelector('input[name="network-device"]:checked')?.value || "WiiM";
+              helpWiim.style.display = selectedDevice === "WiiM" ? "block" : "none";
+              helpLuxsin.style.display = selectedDevice === "Luxsin" ? "block" : "none";
             });
 
             // Watch for IP input to show the Test IP button
@@ -924,13 +1284,43 @@ async function initializeDeviceEqPlugin(context) {
               submitButton.style.display = isValid ? "inline-block" : "none";
             });
 
+            // Switch help text and test button hint when selecting device type
+            const deviceRadios = document.querySelectorAll('input[name="network-device"]');
+            // Defensive: Force radios to render even if host app CSS sets appearance:none
+            deviceRadios.forEach(r => {
+              try {
+                r.style.setProperty('appearance', 'auto', 'important');
+                r.style.setProperty('-webkit-appearance', 'radio', 'important');
+                r.style.setProperty('-moz-appearance', 'radio', 'important');
+                r.style.setProperty('accent-color', '#007BFF');
+                r.type = 'radio'; // ensure input remains radio
+              } catch (e) { /* ignore */ }
+              r.addEventListener('change', () => {
+                const val = document.querySelector('input[name="network-device"]:checked')?.value || 'WiiM';
+                helpWiim.style.display = val === 'WiiM' ? 'block' : 'none';
+                helpLuxsin.style.display = val === 'Luxsin' ? 'block' : 'none';
+                // Update button label hint
+                if (testIpButton.style.display !== 'none') {
+                  testIpButton.textContent = val === 'WiiM' ? 'Open WiiM Status (HTTPS)' : 'Open Luxsin Sync Data (HTTP)';
+                }
+              });
+            });
+
             // Handle Test IP Button Click
             testIpButton.addEventListener("click", () => {
               const ip = ipInput.value.trim();
               if (!ip) return;
-              const confirmProceed = confirm(`This will open a new tab to https://${ip}.\nIf your browser shows a page with some information you have already accepted the certificate, if is shows a security warning, typically "ERR_CERT_AUTHORITY_INVALID" then you will need to accept this cerificate to continue. \n\n You should examine this certificate, check that it is issued by LinkpLay and then used the "Advanced" button to accept this self-signed certificate to proceed with secure access. If this is successful you should see a page with technical information`);
-              if (confirmProceed) {
-                window.open(`https://${ip}/httpapi.asp?command=getStatusEx`, "_blank", "noopener,noreferrer");
+              const selectedDevice = document.querySelector('input[name="network-device"]:checked')?.value || "WiiM";
+              if (selectedDevice === 'WiiM') {
+                const confirmProceed = confirm(`This will open a new tab to https://${ip}.\nIf your browser shows technical info, you've already accepted the certificate. If you see a security warning (e.g., ERR_CERT_AUTHORITY_INVALID), accept the self-signed certificate (issued by Linkplay) via Advanced to proceed.`);
+                if (confirmProceed) {
+                  window.open(`https://${ip}/httpapi.asp?command=getStatusEx`, "_blank", "noopener,noreferrer");
+                }
+              } else if (selectedDevice === 'Luxsin') {
+                const confirmProceed = confirm(`This will open a new tab to http://${ip}/dev/info.cgi?action=syncData.\nIf the IP is correct, you should see encoded text/plain content returned by the device.`);
+                if (confirmProceed) {
+                  window.open(`http://${ip}/dev/info.cgi?action=syncData`, "_blank", "noopener,noreferrer");
+                }
               }
             });
 
@@ -938,7 +1328,7 @@ async function initializeDeviceEqPlugin(context) {
             submitButton.addEventListener("click", () => {
               const ip = ipInput.value.trim();
               if (!ip) {
-                alert("Please enter a valid IP address.");
+                showToast("Please enter a valid IP address.", "error");
                 return;
               }
 
@@ -964,12 +1354,12 @@ async function initializeDeviceEqPlugin(context) {
             } else if (deviceEqUI.connectionType == "usb")  {
               await UsbHIDConnector.disconnectDevice();
             } else if (deviceEqUI.connectionType == "serial")  {
-              // serial support here
+              await UsbSerialConnector.disconnectDevice();
             }
             deviceEqUI.showDisconnectedState();
           } catch (error) {
             console.error("Error disconnecting:", error);
-            alert("Failed to disconnect.");
+            showToast("Failed to disconnect.", "error");
           }
         });
 
@@ -979,7 +1369,7 @@ async function initializeDeviceEqPlugin(context) {
             const device = deviceEqUI.currentDevice;
             const selectedSlot = deviceEqUI.peqDropdown.value;
             if (!device || !selectedSlot) {
-              alert("No device connected or PEQ slot selected.");
+              showToast("No device connected or PEQ slot selected.", "error");
               return;
             }
             var result = null;
@@ -992,25 +1382,18 @@ async function initializeDeviceEqPlugin(context) {
             }
 
             // Check if we have a timeout but still received some filters
-            if (result.timedOut === true && result.filters.length > 0) {
-              console.warn(`Received ${result.receivedCount} of ${result.expectedCount} filters due to timeout`);
-              // Show a warning but still use the partial data if we have at least some filters
-              if (confirm(`Only received ${result.receivedCount} of ${result.expectedCount} filters. Use partial data anyway?`)) {
-                context.filtersToElem(result.filters.filter(f => f !== undefined));
-                context.applyEQ();
-              } else {
-                // User chose not to use partial data
-                return;
-              }
-            } else if (result.filters.length > 0) {
+            if (result.filters.length > 0) {
               // Normal case - all filters received
               context.filtersToElem(result.filters);
               context.applyEQ();
+              showToast("PEQ filters successfully pulled from device.", "success");
             } else {
-              alert("No PEQ filters found on the device.");
+              showToast("No PEQ filters found on the device.", "warning");
             }
           } catch (error) {
             console.error("Error pulling PEQ filters:", error);
+            showToast("Failed to pull PEQ filters from device.", "error");
+
             if (deviceEqUI.connectionType == "network") {
               await NetworkDeviceConnector.disconnectDevice();
             } else if (deviceEqUI.connectionType == "usb") {
@@ -1037,27 +1420,39 @@ async function initializeDeviceEqPlugin(context) {
             }
 
             const device = deviceEqUI.currentDevice;
-            const selectedSlot = deviceEqUI.peqDropdown.value;
+            var selectedSlot = deviceEqUI.peqDropdown.value;
             if (!device || !selectedSlot) {
-              alert("No device connected or PEQ slot selected.");
+              showToast("No device connected or PEQ slot selected.", "error");
               return;
             }
+            if (typeof selectedSlot === 'string' && !isNaN(parseInt(selectedSlot, 10))) {
+              selectedSlot = parseInt(selectedSlot, 10);
+            }
+
 
             // ✅ Use context to get filters instead of undefined elemToFilters()
             const filters = context.elemToFilters(true);
             if (!filters.length) {
-              alert("Please add at least one filter before pushing.");
+              showToast("Please add at least one filter before pushing.", "error");
               return;
             }
-
+            // Make sure that the phoneObj is set
+            if (typeof context.applyEQ === 'function') {
+              context.applyEQ();
+            }
             const preamp_gain = context.calcEqDevPreamp(filters);
             let disconnect = false;
+            // Optional: pass phoneObj (e.g., contains fileName) down to connectors/handlers
+            const phoneTargetDetails = (typeof context.getCurrentPhoneTargetNormalisation === 'function')
+              ? (await context.getCurrentPhoneTargetNormalisation())
+              : null;
+            const phoneObj = phoneTargetDetails?.phoneObj;
             if (deviceEqUI.connectionType == "network") {
-              disconnect = await NetworkDeviceConnector.pushToDevice(device, selectedSlot, preamp_gain, filters);
+              disconnect = await NetworkDeviceConnector.pushToDevice(device, phoneObj, selectedSlot, preamp_gain, filters);
             } else if (deviceEqUI.connectionType == "usb") {
-              disconnect = await UsbHIDConnector.pushToDevice(device, selectedSlot, preamp_gain, filters);
+              disconnect = await UsbHIDConnector.pushToDevice(device, phoneObj, selectedSlot, preamp_gain, filters);
             } else if (deviceEqUI.connectionType == "serial") {
-              disconnect = await UsbSerialConnector.pushToDevice(device, selectedSlot, preamp_gain, filters);
+              disconnect = await UsbSerialConnector.pushToDevice(device, phoneObj, selectedSlot, preamp_gain, filters);
             }
 
             if (disconnect) {
@@ -1069,7 +1464,9 @@ async function initializeDeviceEqPlugin(context) {
                 await UsbSerialConnector.disconnectDevice();
               }
               deviceEqUI.showDisconnectedState();
-              alert("PEQ Saved - Restarting");
+              showToast("PEQ Saved - Restarting", "success");
+            } else {
+              showToast("PEQ Successfully pushed to device", "success");
             }
 
             // Set the last push time to current time and disable the button
@@ -1086,8 +1483,9 @@ async function initializeDeviceEqPlugin(context) {
               console.log("Push button re-enabled after cooldown period");
             }, 200); // 200ms timeout as requested
           } catch (error) {
-
             console.error("Error pushing PEQ filters:", error);
+            showToast("Failed to push PEQ filters to device.", "error");
+
             if (deviceEqUI.connectionType == "network") {
               await NetworkDeviceConnector.disconnectDevice();
             } else if (deviceEqUI.connectionType == "usb") {
@@ -1129,7 +1527,7 @@ async function initializeDeviceEqPlugin(context) {
             }
           } catch (error) {
             console.error("Error updating PEQ slot:", error);
-            alert("Failed to update PEQ slot.");
+            showToast("Failed to update PEQ slot.", "error");
           }
         });
 
