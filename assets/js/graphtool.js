@@ -3930,15 +3930,16 @@ function addHeader() {
     headerLogoElem.className = "logo";
     headerLogoElem.setAttribute('style', "margin-right: 0;");
     headerLogoLink.setAttribute('href', site_url);
-    if (headerLogoText) {
-        headerLogoSpan.innerText = headerLogoText;
-        headerLogoLink.append(headerLogoSpan);
-    } else if (headerLogoImgUrl) {
-        headerLogoImg.setAttribute("src", headerLogoImgUrl);
-        headerLogoLink.append(headerLogoImg);
-    }
+    headerLogoLink.setAttribute('style', "display:inline-flex; align-items:center; white-space:nowrap;");
+    headerLogoSpan.innerText = headerLogoText;
+    headerLogoSpan.setAttribute('style', "color: #ffffff; margin-right:10px; margin-left: auto;"); 
+    headerLogoLink.append(headerLogoSpan);
+    headerLogoImg.setAttribute("src", headerLogoImgUrl);
+    headerLogoImg.setAttribute('style', "width:auto; height: 24px; margin-right:auto; fill: #ffffff;");
+    headerLogoLink.append(headerLogoImg);
     
     altHeaderElem.append(headerButton);
+    headerButton.setAttribute('style', "background-color: #ffffff");
     headerLogoElem.append(headerLogoLink);
     altHeaderElem.setAttribute("data-links", "");
     altHeaderElem.append(headerLogoElem);
