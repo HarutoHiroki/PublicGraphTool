@@ -2,6 +2,7 @@
 https://graphtool-demo.harutohiroki.com/
 
 # Changes
+- Changed AutoEQ algorithm to [PEQdB/autoeq-c](https://github.com/peqdb/autoeq-c)
 - Added Equalizer (cred to Rohsa)
 - Added Uploads
 - Added Targets

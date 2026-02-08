@@ -9,22 +9,14 @@ Equalizer = (function() {
         // Change sample rate will affect the curve of filters close to nyquist frequency
         // Here I choosed a common used value, but not all DSP software use this sample rate for EQ
         DefaultSampleRate: 48000,
-        // AutoEQ will avoid filters above this frequency at first batch
-        TrebleStartFrom: 7000,
         // Avoid filters close to nyquist frequency by default, because the behavior is implementation dependent
         // https://github.com/jaakkopasanen/AutoEq/issues/240
         // https://github.com/jaakkopasanen/AutoEq/issues/411
         AutoEQRange: [20, 15000],
         // Minimum and maximum Q for AutoEQ feature
-        OptimizeQRange: [0.5, 2],
+        OptimizeQRange: [.3, 3],
         // Minimum and maximum Gain for AutoEQ feature
-        OptimizeGainRange: [-12, 12],
-        // Delta and step of Freq, Q and Gain used for AutoEQ optimizing
-        OptimizeDeltas: [
-            [10, 10, 10, 5, 0.1, 0.5],
-            [10, 10, 10, 2, 0.1, 0.2],
-            [10, 10, 10, 1, 0.1, 0.1],
-        ],
+        OptimizeGainRange: [-16, 16],
         // Use to get response diff by EQ before smoothing
         GraphicEQRawFrequences: ( // ~= 1/96 octave
             new Array(Math.ceil(Math.log(20000 / 20) / Math.log(1.0072))).fill(null)
@@ -32,8 +24,10 @@ Equalizer = (function() {
         // Smoothed 127 bands frequencies for graphic eq (wavelet)
         GraphicEQFrequences: Array.from(new Set(
             new Array(Math.ceil(Math.log(20000 / 20) / Math.log(1.0563))).fill(null)
-            .map((_, i) => Math.floor(20 * Math.pow(1.0563, i))))).sort((a, b) => a - b)
+            .map((_, i) => Math.floor(20 * Math.pow(1.0563, i))))).sort((a, b) => a - b),
     };
+
+    let inst = null;
 
     let interp = function (fv, fr) {
         let i = 0;
@@ -148,15 +142,6 @@ Equalizer = (function() {
         return -maxGain;
     };
 
-    let calc_distance = function (fr1, fr2) {
-        let distance = 0;
-        for (let i = 0; i < fr1.length; ++i) {
-            let d = Math.abs(fr1[i][1] - fr2[i][1]);
-            distance += (d >= 0.1 ? d : 0);
-        }
-        return distance / fr1.length;
-    };
-
     let filters_to_coeffs = function (filters, sampleRate) {
         return filters.map(f => {
             if (!f.freq || !f.gain || !f.q) {
@@ -212,184 +197,50 @@ Equalizer = (function() {
         return resultFR;
     };
 
-    let search_candidates = function (fr, frTarget, threshold) {
-        let state = 0; // 1: peak, 0: matched, -1: dip
-        let startIndex = -1;
-        let candidates = [];
-        let [minFreq, maxFreq] = config.AutoEQRange;
-        for (let i = 0; i < fr.length; ++i) {
-            let [f, v0] = fr[i];
-            let v1 = frTarget[i][1];
-            let delta = v0 - v1;
-            let deltaAbs = Math.abs(delta);
-            let nextState = (deltaAbs < threshold) ? 0 : (delta / deltaAbs);
-            if (nextState === state) {
-                continue;
-            }
-            if (startIndex >= 0) {
-                if (state != 0) {
-                    let start = fr[startIndex][0];
-                    let end = f;
-                    let center = Math.sqrt(start * end);
-                    let gain = (
-                        interp([center], frTarget.slice(startIndex, i))[0][1] -
-                        interp([center], fr.slice(startIndex, i))[0][1]);
-                    let q = center / (end - start);
-                    if (center >= minFreq && center <= maxFreq) {
-                        candidates.push({ type: "PK", freq: center, q, gain });
-                    }
-                }
-                startIndex = -1;
-            } else {
-                startIndex = i;
-            }
-            state = nextState;
-        }
-        return candidates;
-    };
+    let autoeq = async function (fr, frTarget, maxFilters, mode) {
+        if (!inst)
+            inst = await AutoEq.make();
 
-    let freq_unit = function (freq) {
-        if (freq < 100) {
-            return 1;
-        } else if (freq < 1000) {
-            return 10;
-        } else if (freq < 10000) {
-            return 100;
-        }
-        return 1000;
-    };
+        maxFilters = Math.min(Math.max(maxFilters, 5), 32);
 
-    let strip = function (filters) {
-        // Make freq, q and gain look better and more compatible to some DSP device
-        let [minQ, maxQ] = config.OptimizeQRange;
-        let [minGain, maxGain] = config.OptimizeGainRange;
-        return filters.map(f => ({
-            type: f.type,
-            freq: Math.floor(f.freq - f.freq % freq_unit(f.freq)),
-            q: Math.min(Math.max(Math.floor(f.q * 10) / 10, minQ), maxQ),
-            gain: Math.min(Math.max(Math.floor(f.gain * 10) / 10, minGain), maxGain)
-        }));
-    };
+        const dst = AutoEq.interp(frTarget.map(x => x[0]), frTarget.map(x => x[1]))
+              src = AutoEq.interp(fr.map(x => x[0]), fr.map(x => x[1]));
 
-    let optimize = function (fr, frTarget, filters, iteration, dir) {
-        filters = strip(filters);
-        let combinations = [];
-        let [minFreq, maxFreq] = config.AutoEQRange;
-        let [minQ, maxQ] = config.OptimizeQRange;
-        let [minGain, maxGain] = config.OptimizeGainRange;
-        let [maxDF, maxDQ, maxDG, stepDF, stepDQ, stepDG] = (
-            config.OptimizeDeltas[iteration]);
-        let [begin, end, step] = (dir ?
-            [filters.length-1, -1, -1] : [0, filters.length, 1]);
-        // Optimize freq, q, gain
-        for (let i = begin; i != end; i += step) {
-            let f = filters[i];
-            let fr1 = apply(fr, filters.filter((f, fi) => fi !== i));
-            let fr2 = apply(fr1, [f]);
-            let fr3 = apply(fr, filters);
-            let bestFilter = f;
-            let bestDistance = calc_distance(fr2, frTarget);
-            let testNewFilter = (df, dq, dg) => {
-                let freq = f.freq + df * freq_unit(f.freq) * stepDF;
-                let q = f.q + dq * stepDQ;
-                let gain = f.gain + dg * stepDG;
-                if (freq < minFreq || freq > maxFreq || q < minQ ||
-                    q > maxQ || gain < minGain || gain > maxGain) {
-                    return false;
-                }
-                let newFilter = { type: f.type, freq, q, gain };
-                let newFR = apply(fr1, [newFilter]);
-                let newDistance = calc_distance(newFR, frTarget);
-                if (newDistance < bestDistance) {
-                    bestFilter = newFilter;
-                    bestDistance = newDistance;
-                    return true;
-                }
-                return false;
-            }
-            for (let df = -maxDF; df < maxDF; ++df) {
-                // Use smaller Q as possible
-                for (let dq = maxDQ-1; dq >= -maxDQ; --dq) {
-                    for (let dg = 1; dg < maxDG; ++dg) {
-                        if (!testNewFilter(df, dq, dg)) {
-                            break;
-                        }
-                    }
-                    for (let dg = -1; dg >= -maxDG; --dg) {
-                        if (!testNewFilter(df, dq, dg)) {
-                            break;
-                        }
-                    }
-                }
-            }
-            filters[i] = bestFilter;
-        }
-        if (!dir) {
-            return optimize(fr, frTarget, filters, iteration, 1);
-        } else {
-            filters = filters.sort((a, b) => a.freq - b.freq);
-            // Merge closed filters
-            for (let i = 0; i < filters.length-1;) {
-                let f1 = filters[i];
-                let f2 = filters[i+1];
-                if (Math.abs(f1.freq - f2.freq) <= freq_unit(f1.freq) &&
-                    Math.abs(f1.q - f2.q) <= 0.1) {
-                    f1.gain += f2.gain;
-                    filters.splice(i+1, 1);
-                } else {
-                    ++i;
-                }
-            }
-            // Remove unnecessary filters
-            let bestDistance = calc_distance(apply(fr, filters), frTarget);
-            for (let i = 0; i < filters.length;) {
-                if (Math.abs(filters[i].gain) <= 0.1) {
-                    filters.splice(i, 1);
-                    continue;
-                }
-                let newDistance = calc_distance(apply(fr,
-                    filters.filter((f, fi) => fi !== i)), frTarget);
-                if (newDistance < bestDistance) {
-                    filters.splice(i, 1);
-                    bestDistance = newDistance;
-                } else {
-                    ++i;
-                }
-            }
-            return filters;
-        }
-    };
+        const c = AutoEq.CONFIGS.STANDARD(
+            maxFilters,
+            config.AutoEQRange[0],
+            config.AutoEQRange[1],
+            config.OptimizeGainRange[0],
+            config.OptimizeGainRange[1],
+            config.OptimizeQRange[0],
+            config.OptimizeQRange[1]
+        );
 
-    let autoeq = function (fr, frTarget, maxFilters) {
-        // 2 steps manual optimized algorithm
-        // fr, frTarget should has same resolution and normalized
-        let firstBatchSize = Math.max(Math.floor(maxFilters / 2) - 1, 1);
-        let firstCandidates = search_candidates(fr, frTarget, 1);
-        let firstFilters = (firstCandidates
-            // Dont adjust treble in the first batch
-            .filter(c => c.freq <= config.TrebleStartFrom)
-            // Wider bandwidth (smaller Q) come first
-            .sort((a, b) => a.q - b.q)
-            .slice(0, firstBatchSize)
-            .sort((a, b) => a.freq - b.freq));
-        for (let i = 0; i < config.OptimizeDeltas.length; ++i) {
-            firstFilters = optimize(fr, frTarget, firstFilters, i);
+        const res = AutoEq.run(inst, dst, src, c,
+            mode === 'OE' ? AutoEq.Smooth.OE : AutoEq.Smooth.IE);
+        if (!res)
+            return [[], 0];
+
+        function round(x, n) {
+            const f = Math.pow(10, n);
+            return Math.round(f*x) / f;
         }
-        let secondFR = apply(fr, firstFilters);
-        let secondBatchSize = maxFilters - firstFilters.length;
-        let secondCandidates = search_candidates(secondFR, frTarget, 0.5);
-        let secondFilters = (secondCandidates
-            .sort((a, b) => a.q - b.q)
-            .slice(0, secondBatchSize)
-            .sort((a, b) => a.freq - b.freq));
-        for (let i = 0; i < config.OptimizeDeltas.length; ++i) {
-            secondFilters = optimize(secondFR, frTarget, secondFilters, i);
+
+        const out = [];
+        for (const filt of res.filters) {
+            out.push({
+                type: filt.type === 'HSC' ? 'HSQ' : filt.type === 'LSC' ? 'LSQ' : 'PK',
+                freq: round(filt.f0, 0),
+                gain: round(filt.gain, 1),
+                q: round(filt.q, 2),
+            });
         }
-        let allFilters = firstFilters.concat(secondFilters);
-        for (let i = 0; i < config.OptimizeDeltas.length; ++i) {
-            allFilters = optimize(fr, frTarget, allFilters, i);
-        }
-        return strip(allFilters);
+
+        out.sort((a, b) => a.freq - b.freq);
+
+        console.log(`[autoeq] took: ${res.time.toFixed(0)} ms`);
+
+        return [out, round(res.amp, 2)];
     };
 
     return {
