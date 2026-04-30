@@ -480,8 +480,8 @@ let dB = {
     max: pad.t+H,
     tr: _ => "translate("+(pad.l-9)+","+dB.y+")"
 };
-dB.all = gr.append("g").attr("class","dBScaler").attr("opacity", "0.5"),
-dB.trans = dB.all.append("g").attr("transform", dB.tr()),
+dB.all   = gr.append("g").attr("class","dBScaler").attr("opacity", "0.5");
+dB.trans = dB.all.append("g").attr("transform", dB.tr());
 dB.scale = dB.trans.append("g").attr("transform", "scale(1,1)");
 dB.scale.selectAll().data([-1,1])
     .join("path").attr("stroke","none")
@@ -895,7 +895,7 @@ function init_normalize(fv) { // Interpolate values for find_offset
             k = (0.005076/Math.pow(10,m)) - Math.pow(10, a*g("T_f")/10),
             c = Math.pow(10, 9.4 + 4*m) / fv.length;
         par.push({a:a, k:k, c:c});
-        ffi = Math.floor(0.5+48*Math.log2(f/19.4806));
+        let ffi = Math.floor(0.5+48*Math.log2(f/19.4806));
         ff.push(free_field[Math.max(0,Math.min(479,ffi))]);
     });
     return par;
@@ -1063,7 +1063,7 @@ let getBgColor = p => {
     ['r','g','b'].forEach(p=>c[p]=255-(255-Math.max(0,c[p]))*0.85);
     return c;
 }
-let phoneNumber = 0; // I'm so sorry it just happened
+let phoneNumber = 0;
 // Find a phone id which doesn't have a color conflict with pins
 let nextPN = 0; // Cached value; invalidated when pinned headphones change
 function nextPhoneNumber() {
@@ -1208,20 +1208,18 @@ function setHover(elt, h) {
     elt.on("mouseover", h(true)).on("mouseout", h(false));
 }
 
-// See if iframe gets CORS error when interacting with window.top
+// See if iframe gets CORS errors when interacting with window.top / window.top.document
+let accessWindowTop, accessDocumentTop, targetWindow;
 try {
     let emb = window.location.href.includes('embed');
-    
-    accessWindowTop = (window.top.location.href) ? true:false;
+    accessWindowTop = Boolean(window.top.location.href);
     targetWindow = emb ? window : window.top;
 } catch {
     accessWindowTop = false;
     targetWindow = window;
 }
-
-// See if iframe gets CORS error when interacting with window.top.document
 try {
-    accessDocumentTop = (window.top.document) ? true:false;
+    accessDocumentTop = Boolean(window.top.document);
 } catch {
     accessDocumentTop = false;
 }
@@ -1285,6 +1283,22 @@ function updatePaths(trigger) {
     if (stickyLabels) drawLabels();
 }
 let colorBar = p=>'url(\'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 8"><path d="M0 8v-8h1c0.05 1.5,-0.3 3,-0.16 5s0.1 2,0.15 3z" fill="'+getBgColor(p)+'"/></svg>\')';
+
+function toggleHide(p) {
+    let h = p.hide;
+    let t = table.selectAll("tr").filter(q=>q===p);
+    t.select(".keyLine").on("click", h?null:toggleHide)
+        .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
+    t.select(".hideIcon").classed("selected", !h);
+    gpath.selectAll("path").filter(c=>c.p===p)
+        .attr("opacity", h?null:0);
+    p.hide = !h;
+    if (labelsShown) {
+        clearLabels();
+        drawLabels();
+    }
+}
+
 function updatePhoneTable() {
     let c = table.selectAll("tr").data(activePhones.filter(p => !p.isPrefBounds), p=>p.fileName);
     c.exit().remove();
@@ -1362,20 +1376,6 @@ function updatePhoneTable() {
         .html("<svg width='100' height='100' viewBox='0 0 100 100' stroke-width='1.5'><use xlink:href='#ninety-icon'></use></svg>")
         .on("click", showNinetyInclusion);
 
-    function toggleHide(p) {
-        let h = p.hide;
-        let t = table.selectAll("tr").filter(q=>q===p);
-        t.select(".keyLine").on("click", h?null:toggleHide)
-            .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
-        t.select(".hideIcon").classed("selected", !h);
-        gpath.selectAll("path").filter(c=>c.p===p)
-            .attr("opacity", h?null:0);
-        p.hide = !h;
-        if (labelsShown) {
-            clearLabels();
-            drawLabels();
-        }
-    }
     td().attr("class","button hideIcon")
         .attr("title", "Hide graph")
         .html("<svg viewBox='-2.5 0 19 12'><use xlink:href='#hide-icon'></use></svg>")
@@ -1385,15 +1385,10 @@ function updatePhoneTable() {
         .attr("data-pinned","false")
         .html("<svg viewBox='-135 -100 270 200'><use xlink:href='#pin-icon'></use></svg>")
         .on("click",function(p){
-            if ( p.pin ) {
-                p.pin = false;
-                this.setAttribute("data-pinned","false");
-            } else {
-                p.pin = true; nextPN = null;
-                this.setAttribute("data-pinned","true");
-            }
-
-            p.pin = true; nextPN = null;
+            // Pin is one-way: replace the button with a permanent pin mark.
+            p.pin = true;
+            nextPN = null;
+            this.setAttribute("data-pinned","true");
             d3.select(this)
                 .text(null).classed("button",false).on("click",null)
                 .insert("svg").attr("class","pinMark")
@@ -1485,7 +1480,7 @@ function handleComp(p, opt) {
         let compTarget = window.brandTarget.phoneObjs.find(p => p.dispName == opt);
         p.comp = opt;
         if (!compTarget.rawChannels) {
-            loadFiles(compTarget, function (tch) { // Haruto: fuck promises imma just slap down a "it works for now" solution
+            loadFiles(compTarget, function (tch) {
                 compTarget.rawChannels = tch;
                 let comp = compTarget.rawChannels[0].map(d => d[1]);
             
@@ -1611,7 +1606,6 @@ function addKey(s) {
             if (!p.hide && cs.length===2) {
                 d3.event.stopPropagation();
                 hl(p, h ? (c=>c===cs[pi[1]]) : true);
-                // clearLabels(); why is this here this is stupid
                 gpath.selectAll("path").filter(c=>c.p===p).attr("opacity",h ? (c=>c!==cs[pi[1]]?0.7:null) : null);
             }
         })
@@ -1800,7 +1794,7 @@ function createPopupMenu(p, x, y) {
 
     // Add a right side menu
     let menuRightSide = popup.append("div").attr("class", "right-side");
-    
+
     // lmao why button when can div
     menuRightSide.append("div")
     .style("margin-bottom", "3px")
@@ -2028,9 +2022,8 @@ function showPhone(p, exclusive, suppressVariant, trigger) {
             setAddButton(false);
         }
     }
-    let PB = p => p.isPrefBounds ? p.isPrefBounds : false;
     let keep = !exclusive ? (q=>true)
-             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget || PB(q));
+             : (q => q.copyOf===p || q.pin || q.isTarget!==p.isTarget || q.isPrefBounds);
     if (!p.rawChannels) {
         loadFiles(p, function (ch) {
             if (p.rawChannels) return;
@@ -2392,23 +2385,18 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         // New Tilt
         let brand = window.brandTarget;
         let phoneObjs = brand.phoneObjs;
-        let preferenceAdjustments = " ";
-        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? preferenceAdjustments += "(" : null;
-        tilt != 0 ? preferenceAdjustments += "Tilt: " + tilt + "dB/Oct" : null;
-        tilt != 0 && (boost != 0 || treble !=0 || ear != 0) ? preferenceAdjustments += ", " : null;
-        boost != 0 ? preferenceAdjustments += "B: " + boost + "dB" : null;
-        boost != 0 && (treble != 0 || ear != 0) ? preferenceAdjustments += ", " : null;
-        treble != 0 ? preferenceAdjustments += "T: " + treble + "dB" : null;
-        treble != 0 && ear != 0 ? preferenceAdjustments += ", " : null;
-        ear != 0 ? preferenceAdjustments += "3kHz: " + ear + "dB" : null;
-        tilt != 0 || boost != 0 || treble != 0 || ear != 0 ? preferenceAdjustments += ")" : null;
+        let parts = [];
+        if (tilt   != 0) parts.push("Tilt: " + tilt   + "dB/Oct");
+        if (boost  != 0) parts.push("B: "    + boost  + "dB");
+        if (treble != 0) parts.push("T: "    + treble + "dB");
+        if (ear    != 0) parts.push("3kHz: " + ear    + "dB");
+        let preferenceAdjustments = parts.length ? " (" + parts.join(", ") + ")" : " ";
 
         if (harmanFilters) {
-            harmanFilters.forEach(filter => {
-                if (tilt == filter.tilt && boost == filter.bass_shelf && treble == filter.treble && ear == filter.ear) {
-                    preferenceAdjustments += ` (${filter.name} Filters)`;
-                }
-            });
+            let match = harmanFilters.find(f =>
+                tilt   == f.tilt       && boost == f.bass_shelf &&
+                treble == f.treble     && ear   == f.ear);
+            if (match) preferenceAdjustments += ` (${match.name} Filters)`;
         }
 
         let phoneObj = { isTarget:true, brand:brand, phone:"Custom Tilt",
@@ -2420,10 +2408,11 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         
         let oldPhoneObj = phoneObjs.filter(p => p.phone == "Custom Tilt")[0];
         if (oldPhoneObj) {
-            // oldPhoneObj.active && removePhone(oldPhoneObj);
+            // Replace in-place rather than removePhone(oldPhoneObj) so the
+            // visual transition stays smooth.
             phoneObj.id = oldPhoneObj.id;
             phoneObjs[phoneObjs.indexOf(oldPhoneObj)] = phoneObj;
-            oldPhoneObj.active = false; // worse, but more aesthetic
+            oldPhoneObj.active = false;
             activePhones = activePhones.filter(p => p.active);
             updatePhoneTable();
         } else {
@@ -2448,32 +2437,18 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
         }
     }
 
-    doc.select("#cusdf-bass").on("change input", function () {
-        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
-        boost = +this.value;
-        if (konami) {
-            // hidden features
-        }
-        updateDF(boost, tilt, ear, treble, "bass");
-    });
-
-    doc.select("#cusdf-tilt").on("change input", function () {
-        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
-        tilt = +this.value;
-        updateDF(boost, tilt, ear, treble, "tilt");
-    });
-
-    doc.select("#cusdf-ear").on("change input", function () {
-        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
-        ear = +this.value;
-        updateDF(boost, tilt, ear, treble, "ear");
-    });
-
-    doc.select("#cusdf-treb").on("change input", function () {
-        if (!this.value.match(/^-?\d*(\.\d+)?$/)) return;
-        treble = +this.value;
-        updateDF(boost, tilt, ear, treble, "treble");
-    });
+    const NUMERIC_INPUT = /^-?\d*(\.\d+)?$/;
+    function bindCusdfInput(selector, kind, setter) {
+        doc.select(selector).on("change input", function () {
+            if (!NUMERIC_INPUT.test(this.value)) return;
+            setter(+this.value);
+            updateDF(boost, tilt, ear, treble, kind);
+        });
+    }
+    bindCusdfInput("#cusdf-bass", "bass",   v => boost  = v);
+    bindCusdfInput("#cusdf-tilt", "tilt",   v => tilt   = v);
+    bindCusdfInput("#cusdf-ear",  "ear",    v => ear    = v);
+    bindCusdfInput("#cusdf-treb", "treble", v => treble = v);
                             
     // Harman Filters button
     if (harmanFilters) {
@@ -2499,21 +2474,6 @@ d3.json(typeof PHONE_BOOK !== "undefined" ? PHONE_BOOK
     
     // button to toggle preference bounds
     let boundsBtn = doc.select("#cusdf-bounds").on("click", function () {
-        function toggleHide(p) {
-            let h = p.hide;
-            let t = table.selectAll("tr").filter(q=>q===p);
-            t.select(".keyLine").on("click", h?null:toggleHide)
-                .selectAll("path,.imbalance").attr("opacity", h?null:0.5);
-            t.select(".hideIcon").classed("selected", !h);
-            gpath.selectAll("path").filter(c=>c.p===p)
-                .attr("opacity", h?null:0);
-            p.hide = !h;
-            if (labelsShown) {
-                clearLabels();
-                drawLabels();
-            }
-        }
-
         // set button class to selected
         if (boundsBtn.classed("selected")) {
             boundsBtn.classed("selected", false);
@@ -3045,6 +3005,12 @@ function blurFocus() {
 blurFocus();
 
 // Add extra feature
+const SVG_ICON = {
+    play:    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 22v-20l18 10-18 10z"/></svg>',
+    pause:   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z"/></svg>',
+    volume:  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6 7l8-5v20l-8-5v-10zm-6 10h4v-10h-4v10zm20.264-13.264l-1.497 1.497c1.847 1.783 2.983 4.157 2.983 6.767 0 2.61-1.135 4.984-2.983 6.766l1.498 1.498c2.305-2.153 3.735-5.055 3.735-8.264s-1.43-6.11-3.736-8.264zm-.489 8.264c0-2.084-.915-3.967-2.384-5.391l-1.503 1.503c1.011 1.049 1.637 2.401 1.637 3.888 0 1.488-.623 2.841-1.634 3.891l1.503 1.503c1.468-1.424 2.381-3.309 2.381-5.394z"/></svg>',
+    muted:   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 7.358v15.642l-8-5v-.785l8-9.857zm3-6.094l-1.548-1.264-3.446 4.247-6.006 3.753v3.646l-2 2.464v-6.11h-4v10h.843l-3.843 4.736 1.548 1.264 18.452-22.736z"/></svg>'
+};
 function addExtra() {
     let extraButton = document.querySelector("div.select > div.selector-tabs > button.extra");
     // Disable functions by config
@@ -3162,7 +3128,7 @@ function addExtra() {
 
             let pinkNoisePlayButton = document.getElementById("play-button");
             pinkNoisePlayButton.classList.remove("playing");
-            pinkNoisePlayButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M3 22v-20l18 10-18 10z\"/></svg>";
+            pinkNoisePlayButton.innerHTML = SVG_ICON.play;
 
             uploadedAudio = null;
             uploadedSource.disconnect();
@@ -3307,29 +3273,15 @@ function addExtra() {
             (a.freq || Infinity) - (b.freq || Infinity)));
     });
     // Disable / Enable all filters
-    document.querySelector("div.extra-eq button.disable-filters").addEventListener("click", () => {
-        // if button is not selected then disable all filters
-        if (!document.querySelector("div.extra-eq button.disable-filters").classList.contains("selected")) {
-            // add selected class to button
-            document.querySelector("div.extra-eq button.disable-filters").classList.add("selected");
-            // rename button to enable all filters
-            document.querySelector("div.extra-eq button.disable-filters").innerText = "Enable All";
-            // disable all filters
-            for (let i = 0; i < eqBands; ++i) {
-                filterEnabledInput[i].checked = false;
-            }
-            applyEQ();
-        } else { // enables all filters
-            // remove selected class to button
-            document.querySelector("div.extra-eq button.disable-filters").classList.remove("selected");
-            // rename button to disable all filters
-            document.querySelector("div.extra-eq button.disable-filters").innerText = "Disable All";
-            // enable all filters
-            for (let i = 0; i < eqBands; ++i) {
-                filterEnabledInput[i].checked = true;
-            }
-            applyEQ();
+    let disableFiltersBtn = document.querySelector("div.extra-eq button.disable-filters");
+    disableFiltersBtn.addEventListener("click", () => {
+        let disabling = !disableFiltersBtn.classList.contains("selected");
+        disableFiltersBtn.classList.toggle("selected", disabling);
+        disableFiltersBtn.innerText = disabling ? "Enable All" : "Disable All";
+        for (let i = 0; i < eqBands; ++i) {
+            filterEnabledInput[i].checked = !disabling;
         }
+        applyEQ();
     });
     // Saving filters as a separate comparable phone
     let savedCounter = 1;
@@ -3563,12 +3515,12 @@ function addExtra() {
     volumeIcon.addEventListener("click", () => {
         if (volumeIcon.classList.contains("muted")) {
             volumeIcon.classList.remove("muted");
-            volumeIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M6 7l8-5v20l-8-5v-10zm-6 10h4v-10h-4v10zm20.264-13.264l-1.497 1.497c1.847 1.783 2.983 4.157 2.983 6.767 0 2.61-1.135 4.984-2.983 6.766l1.498 1.498c2.305-2.153 3.735-5.055 3.735-8.264s-1.43-6.11-3.736-8.264zm-.489 8.264c0-2.084-.915-3.967-2.384-5.391l-1.503 1.503c1.011 1.049 1.637 2.401 1.637 3.888 0 1.488-.623 2.841-1.634 3.891l1.503 1.503c1.468-1.424 2.381-3.309 2.381-5.394z\"/></svg>"
+            volumeIcon.innerHTML = SVG_ICON.volume;
             volumeRange.value = currentVolume;
             volumeNode.gain.value = currentVolume/100;
         } else {
             volumeIcon.classList.add("muted");
-            volumeIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M19 7.358v15.642l-8-5v-.785l8-9.857zm3-6.094l-1.548-1.264-3.446 4.247-6.006 3.753v3.646l-2 2.464v-6.11h-4v10h.843l-3.843 4.736 1.548 1.264 18.452-22.736z\"/></svg>"
+            volumeIcon.innerHTML = SVG_ICON.muted;
             currentVolume = volumeRange.value;
             volumeRange.value = 0;
             volumeNode.gain.value = 0;
@@ -3706,7 +3658,7 @@ function addExtra() {
             }
 
             pinkNoisePlayButton.classList.remove("playing");
-            pinkNoisePlayButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M3 22v-20l18 10-18 10z\"/></svg>";
+            pinkNoisePlayButton.innerHTML = SVG_ICON.play;
 
             switch (eqTrack.value) {
                 default:
@@ -3785,7 +3737,7 @@ function addExtra() {
         // when song ends, reset button
         currentAudio.addEventListener("ended", () => {
             pinkNoisePlayButton.classList.remove("playing");
-            pinkNoisePlayButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M3 22v-20l18 10-18 10z\"/></svg>";
+            pinkNoisePlayButton.innerHTML = SVG_ICON.play;
         });
 
         // play pink noise when button class="pink-noise" is clicked and stop when clicked again
@@ -3799,7 +3751,7 @@ function addExtra() {
                     currentAudio.currentTime = 0;
                 }
                 pinkNoisePlayButton.classList.remove("playing");
-                pinkNoisePlayButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M3 22v-20l18 10-18 10z\"/></svg>";
+                pinkNoisePlayButton.innerHTML = SVG_ICON.play;
             } else {
                 audioContext.resume();
                 if (toneGenActive) {
@@ -3814,16 +3766,15 @@ function addExtra() {
                     currentAudio.play();
                 }
                 pinkNoisePlayButton.classList.add("playing");
-                pinkNoisePlayButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z\"/></svg>"
+                pinkNoisePlayButton.innerHTML = SVG_ICON.pause;
             }
         });
     });
 
     // get average of all active headphones except targets
     function getAvgAll() {
-        let PB = p => p.isPrefBounds ? p.isPrefBounds : false;
-        let v = activePhones.filter(p => !p.isTarget && !PB(p)).map(p => getAvgArithmetic(p));
-        return avgCurvesArithmetic(v); 
+        let v = activePhones.filter(p => !p.isTarget && !p.isPrefBounds).map(getAvgArithmetic);
+        return avgCurvesArithmetic(v);
     }
     // draw average of all active headphones
     let avgAllBtn = document.querySelector("button#avg-all");
@@ -4010,7 +3961,7 @@ if (externalLinksBar) { addExternalLinks(); }
 
 // Add tutorial to alt layout
 function addTutorial() {
-    let partsPrimary = document.querySelector("section.parts-primary")
+    let partsPrimary = document.querySelector("section.parts-primary"),
         graphContainer = document.querySelector("div.graph-sizer"),
         manageContainer = document.querySelector("div.manage"),
         overlayContainer = document.createElement("div"),
@@ -4135,7 +4086,7 @@ setActiveDatabase();
 
 // Expand / collapse function
 function toggleExpandCollapse() {
-    const graphIsIframe = (window.top !== window.self) ? true:false,
+    const graphIsIframe = window.top !== window.self,
         graphBody = document.querySelector("body"),
         parentBody = window.top.document.querySelector("body"),
         expandCollapseButton = document.querySelector("button#expand-collapse");
@@ -4337,10 +4288,10 @@ function setUserConfig() {
         let phoneJson = {},
             fullName = phone.fullName,
             fileName = phone.fileName,
-            isTarget = phone.isTarget ? phone.isTarget : false,
-            isHidden = phone.hide ? phone.hide : false,
-            isBaseline = fileName === activeBaseline ? true : false,
-            isPinned = phone.pin ? phone.pin : false;
+            isTarget = Boolean(phone.isTarget),
+            isHidden = Boolean(phone.hide),
+            isBaseline = fileName === activeBaseline,
+            isPinned = Boolean(phone.pin);
         
         if (isTarget || isBaseline) {
             phoneJson.fullName = fullName;
