@@ -237,7 +237,7 @@ function setupGraphAnalytics() {
     if ( analyticsEnabled ) {
         const pageHead = document.querySelector("head"),
               graphAnalytics = document.createElement("script"),
-              graphAnalyticsSrc = "assets/js/graphAnalytics.js";
+              graphAnalyticsSrc = "assets/js/tool_components/graphAnalytics.js";
         
         graphAnalytics.setAttribute("src", graphAnalyticsSrc);
         pageHead.append(graphAnalytics);
@@ -303,5 +303,5 @@ let tutorialDefinitions = [
 
 // Configure paths to extraEQ plugins here
 let extraEQplugins = [
-    './devicePEQ/plugin.js' // Path to one or more "extraEQ" plugins
+    '../devicePEQ/plugin.js' // Path to one or more "extraEQ" plugins
 ];
