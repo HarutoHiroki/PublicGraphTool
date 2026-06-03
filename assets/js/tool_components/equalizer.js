@@ -146,9 +146,9 @@ Equalizer = (function() {
         if (!inst)
             inst = await AutoEq.make();
 
-        maxFilters = Math.min(Math.max(maxFilters, 5), 32);
+        maxFilters = Math.min(Math.max(maxFilters, 1), 32);
 
-        const dst = AutoEq.interp(frTarget.map(x => x[0]), frTarget.map(x => x[1]))
+        const dst = AutoEq.interp(frTarget.map(x => x[0]), frTarget.map(x => x[1])),
               src = AutoEq.interp(fr.map(x => x[0]), fr.map(x => x[1]));
 
         const c = AutoEq.CONFIGS.STANDARD(
@@ -160,6 +160,16 @@ Equalizer = (function() {
             config.OptimizeQRange[0],
             config.OptimizeQRange[1]
         );
+
+        if (maxFilters <= 3) {
+            // with 3 or less filters shelving filters are not worth it so just use peaking
+            c.specs = Array(maxFilters).fill({
+                type: AutoEq.Type.PK,
+                f0: [config.AutoEQRange[0], config.AutoEQRange[1]],
+                gain: [config.OptimizeGainRange[0], config.OptimizeGainRange[1]],
+                q: [config.OptimizeQRange[0], config.OptimizeQRange[1]],
+            });
+        }
 
         const res = AutoEq.run(inst, dst, src, c,
             mode === 'OE' ? AutoEq.Smooth.OE : AutoEq.Smooth.IE);
@@ -254,4 +264,3 @@ Equalizer = (function() {
         autoeq
     }
 })();
-

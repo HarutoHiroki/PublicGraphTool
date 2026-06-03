@@ -211,6 +211,7 @@ function addExtra() {
         });
     };
     let applyEQHandle = null;
+    let pendingEqOffset = null;
     let applyEQExec = () => {
         // Create and show phone with eq applied
         let activeElem = document.activeElement;
@@ -240,7 +241,6 @@ function addExtra() {
         showPhone(phoneObjEQ, false);
         activeElem.focus();
     };
-    let pendingEqOffset = null;
     let applyEQ = () => {
         clearTimeout(applyEQHandle);
         applyEQHandle = setTimeout(applyEQExec, 1);
@@ -447,28 +447,30 @@ function addExtra() {
         let autoEQOverlay = document.querySelector(".extra-eq-overlay");
         autoEQOverlay.style.display = "block";
         setTimeout(async () => {
-            let autoEQFrom = Math.min(Math.max(parseInt(autoEQFromInput.value) || 0, 20), 20000);
-            let autoEQTo = Math.min(Math.max(parseInt(autoEQToInput.value) || 0, autoEQFrom), 20000);
-            Equalizer.config.AutoEQRange = [autoEQFrom, autoEQTo];
-            let autoEQGainFrom = Math.min(Math.max(parseInt(autoEQGainFromInput.value) || 0, -20), 20);
-            let autoEQGainTo = Math.min(Math.max(parseInt(autoEQGainToInput.value) || 0, autoEQGainFrom), 20);
-            Equalizer.config.OptimizeGainRange = [autoEQGainFrom, autoEQGainTo];
-            let autoEQQFrom = Math.min(Math.max(parseFloat(autoEQQFromInput.value) || 0, 0.1), 5);
-            let autoEQQTo = Math.min(Math.max(parseFloat(autoEQQToInput.value) || 0, autoEQQFrom), 5);
-            Equalizer.config.OptimizeQRange = [autoEQQFrom, autoEQQTo];
-            let phoneCHs = (phoneObj.rawChannels.filter(c => c)
-                .map(ch => ch.map(([f, v]) => [f, v + phoneObj.norm])));
-            let phoneCH = (phoneCHs.length > 1) ? avgCurves(phoneCHs) : phoneCHs[0];
-            let targetCH = targetObj.rawChannels.filter(c => c)[0].map(([f, v]) => [f, v + targetObj.norm]);
+            try {
+                let autoEQFrom = Math.min(Math.max(parseInt(autoEQFromInput.value) || 0, 20), 20000);
+                let autoEQTo = Math.min(Math.max(parseInt(autoEQToInput.value) || 0, autoEQFrom), 20000);
+                Equalizer.config.AutoEQRange = [autoEQFrom, autoEQTo];
+                let autoEQGainFrom = Math.min(Math.max(parseInt(autoEQGainFromInput.value) || 0, -20), 20);
+                let autoEQGainTo = Math.min(Math.max(parseInt(autoEQGainToInput.value) || 0, autoEQGainFrom), 20);
+                Equalizer.config.OptimizeGainRange = [autoEQGainFrom, autoEQGainTo];
+                let autoEQQFrom = Math.min(Math.max(parseFloat(autoEQQFromInput.value) || 0, 0.1), 5);
+                let autoEQQTo = Math.min(Math.max(parseFloat(autoEQQToInput.value) || 0, autoEQQFrom), 5);
+                Equalizer.config.OptimizeQRange = [autoEQQFrom, autoEQQTo];
+                let phoneCHs = (phoneObj.rawChannels.filter(c => c)
+                    .map(ch => ch.map(([f, v]) => [f, v + phoneObj.norm])));
+                let phoneCH = (phoneCHs.length > 1) ? avgCurves(phoneCHs) : phoneCHs[0];
+                let targetCH = targetObj.rawChannels.filter(c => c)[0].map(([f, v]) => [f, v + targetObj.norm]);
 
-            let [filters, offset] = await Equalizer.autoeq(
-                phoneCH, targetCH, eqBands, typeof autoEqMode === 'undefined' ? 'IE' : autoEqMode);
+                let [filters, offset] = await Equalizer.autoeq(
+                    phoneCH, targetCH, eqBands, typeof autoEqMode === 'undefined' ? 'IE' : autoEqMode);
 
-            filtersToElem(filters);
-            pendingEqOffset = offset;
-            applyEQ();
-
-            autoEQOverlay.style.display = "none";
+                filtersToElem(filters);
+                pendingEqOffset = offset;
+                applyEQ();
+            } finally {
+                autoEQOverlay.style.display = "none";
+            }
         }, 1);
     });
 
