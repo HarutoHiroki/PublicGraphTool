@@ -293,7 +293,7 @@ doc.html(`
         </div>
       </div>
     </section>
-    <div style="display: none" class="extra-eq-overlay">AutoEQ is running, it could take 5~20 seconds or more.</div>
+    <div style="display: none;" class="extra-eq-overlay">AutoEQ is running, it could take 5~20 seconds or more.</div>
   </main>
 `);
 

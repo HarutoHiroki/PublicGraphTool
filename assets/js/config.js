@@ -36,7 +36,8 @@ const init_phones = ["Haruto 2024 Target", "AudioSense DT200"],// Optional. Whic
       extraUploadEnabled = true,                    // Enable upload function
       extraEQEnabled = true,                        // Enable parametic eq function
       extraEQBands = 10,                            // Default EQ bands available
-      extraEQBandsMax = 20;                         // Max EQ bands available
+      extraEQBandsMax = 20,                         // Max EQ bands available
+      autoEqMode = 'IE';                            // AutoEQ smoothing mode, accepts 'IE' or 'OE'.
 
 // Specify which targets to display
 const targets = [
