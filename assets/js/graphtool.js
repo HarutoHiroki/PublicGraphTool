@@ -232,6 +232,10 @@ doc.html(`
                 <span><input name="autoeq-q-from" type="number" min="0.1" max="10" step="0.1" value="0.1"></input></span>
                 <span><input name="autoeq-q-to" type="number" min="0.1" max="10" step="0.1" value="3"></input></span>
               </div>
+              <div class="settings-row smooth-row">
+                <span name="title">Smoothing</span>
+                <span><input name="autoeq-smooth" type="checkbox" checked></input></span>
+              </div>
               <div class="auto-eq-button" style="margin-bottom:6px">              
                 <button class="autoeq">AutoEQ</button>
                 <button class="readme">Readme</button>

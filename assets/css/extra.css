@@ -367,7 +367,8 @@ div.extra-panel > div.extra-eq > div.filters > div.filter {
   gap: 7px;
 }
 
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='checkbox'] {
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='checkbox'],
+div.extra-panel div.settings-row > span > input[type='checkbox'] {
   margin: 0;
   padding: 0 !important;
   appearance: none;
@@ -383,7 +384,8 @@ div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type='c
   place-content: center;
 }
 
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]::before {
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]::before,
+div.extra-panel div.settings-row > span > input[type="checkbox"]::before {
   content: "";
   width: 0.65em;
   height: 0.65em;
@@ -396,7 +398,8 @@ div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="c
   margin: 2px auto;
 }
 
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]:checked::before {
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input[type="checkbox"]:checked::before,
+div.extra-panel div.settings-row > span > input[type="checkbox"]:checked::before {
   transform: scale(1);
 }
 
@@ -423,8 +426,8 @@ div.extra-eq > div.eq-demo > select {
   background-size: 0.65em auto, 100%;
 }
 
-div.extra-panel > div.extra-eq > div.filters > div.filter > span > input,
-div.extra-panel div.settings-row > span > input {
+div.extra-panel > div.extra-eq > div.filters > div.filter > span > input:not([type='checkbox']),
+div.extra-panel div.settings-row > span > input:not([type='checkbox']) {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--background-color-contrast-more);
@@ -527,6 +530,22 @@ div.extra-panel div.settings-row > span {
 
 div.extra-panel div.settings-row > span[name="title"] {
   width: 50%;
+}
+
+div.extra-panel div.settings-row.smooth-row {
+  margin-top: 8px;
+  align-items: center;
+}
+
+div.extra-panel div.settings-row.smooth-row > span[name="title"] {
+  width: 50%;
+}
+
+div.extra-panel div.settings-row.smooth-row > span:not([name="title"]) {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  padding-left: 2px;
 }
 
 div.extra-panel div.filters-button > span[class="eqopts"] {

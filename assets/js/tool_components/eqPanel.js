@@ -421,6 +421,8 @@ function addExtra() {
     let autoEQGainToInput = document.querySelector("div.extra-eq input[name='autoeq-gain-to']");
     let autoEQQFromInput = document.querySelector("div.extra-eq input[name='autoeq-q-from']");
     let autoEQQToInput = document.querySelector("div.extra-eq input[name='autoeq-q-to']");
+    let autoEQSmoothInput = document.querySelector("div.extra-eq input[name='autoeq-smooth']");
+    autoEQSmoothInput.checked = (typeof autoEqSmooth === 'undefined') ? true : autoEqSmooth;
     autoEQFromInput.value = Equalizer.config.AutoEQRange[0].toFixed(0);
     autoEQToInput.value = Equalizer.config.AutoEQRange[1].toFixed(0);
     autoEQGainFromInput.value = Equalizer.config.OptimizeGainRange[0].toFixed(0);
@@ -463,7 +465,8 @@ function addExtra() {
                 let targetCH = targetObj.rawChannels.filter(c => c)[0].map(([f, v]) => [f, v + targetObj.norm]);
 
                 let [filters, offset] = await Equalizer.autoeq(
-                    phoneCH, targetCH, eqBands, typeof autoEqMode === 'undefined' ? 'IE' : autoEqMode);
+                    phoneCH, targetCH, eqBands, typeof autoEqMode === 'undefined' ? 'IE' : autoEqMode,
+                    autoEQSmoothInput.checked);
 
                 filtersToElem(filters);
                 pendingEqOffset = offset;
