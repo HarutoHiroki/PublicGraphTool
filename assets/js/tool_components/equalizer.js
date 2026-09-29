@@ -142,7 +142,7 @@ Equalizer = (function() {
         return -maxGain;
     };
 
-    let autoeq = async function (fr, frTarget, maxFilters, mode) {
+    let autoeq = async function (fr, frTarget, maxFilters, mode, smooth = true) {
         if (!inst)
             inst = await AutoEq.make();
 
@@ -171,8 +171,10 @@ Equalizer = (function() {
             });
         }
 
+        c.smooth = smooth;
+
         const res = AutoEq.run(inst, dst, src, c,
-            mode === 'OE' ? AutoEq.Smooth.OE : AutoEq.Smooth.IE);
+            smooth ? (mode === 'OE' ? AutoEq.Smooth.OE : AutoEq.Smooth.IE) : AutoEq.Smooth.NONE);
         if (!res)
             return [[], 0];
 

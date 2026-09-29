@@ -37,7 +37,8 @@ const init_phones = ["Haruto 2024 Target", "AudioSense DT200"],// Optional. Whic
       extraEQEnabled = true,                        // Enable parametic eq function
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
-      autoEqMode = 'IE';                            // AutoEQ smoothing mode, accepts 'IE' or 'OE'.
+      autoEqMode = 'IE',                            // AutoEQ smoothing mode, accepts 'IE' or 'OE'.
+      autoEqSmooth = true;                          // Enable adaptive smoothing in AutoEQ
 
 // Specify which targets to display
 const targets = [

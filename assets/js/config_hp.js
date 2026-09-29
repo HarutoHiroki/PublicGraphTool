@@ -38,6 +38,7 @@ const init_phones = ["IEF Neutral Target"],                             // Optio
       extraEQBands = 10,                            // Default EQ bands available
       extraEQBandsMax = 20,                         // Max EQ bands available
       autoEqMode = 'OE',                            // AutoEQ smoothing mode, accepts 'IE' or 'OE'.
+      autoEqSmooth = true,                          // Enable adaptive smoothing in AutoEQ
       num_samples = 5,                              // Number of samples to average for smoothing
       scale_smoothing = 0.2;                        // Smoothing factor for scale transitions
 
