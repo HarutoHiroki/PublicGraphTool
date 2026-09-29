@@ -2,7 +2,6 @@
 https://graphtool-demo.harutohiroki.com/
 
 # Changes
-- Changed AutoEQ algorithm to [PEQdB/autoeq-c](https://github.com/peqdb/autoeq-c)
 - Added Equalizer (cred to Rohsa)
 - Added Uploads
 - Added Targets
@@ -37,6 +36,8 @@ https://graphtool-demo.harutohiroki.com/
 - Added a Graph Customisation menu
 - Added Translations (Thanks to potatosalad775) (removed for now due to not having enough translations, will be added back soon)
 - Added the 90% Inclusion Zone feature (requested and long awaited by the community)
+- Changed AutoEQ algorithm to [PEQdB/autoeq-c](https://github.com/peqdb/autoeq-c)
+- AutoEQ Smoothing feature ([PR](https://github.com/HarutoHiroki/PublicGraphTool/pull/9) by ArisoN-ext)
 
 # TODO
 - Implement a way to measure the SPL of an IEM and decide whether to upload it or not, skipping REW
